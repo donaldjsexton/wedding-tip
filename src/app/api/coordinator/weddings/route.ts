@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // For MVP, we'll use a simple approach without authentication
     // In production, you'd want to authenticate the coordinator first

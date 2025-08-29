@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Heart, Plus, Calendar, Users, DollarSign, ChevronRight } from 'lucide-react';
+import { Heart, Plus, Calendar, Users, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface Wedding {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Heart, DollarSign, CreditCard, Smartphone, Info, CheckCircle } from 'lucide-react';
+import { Heart, Info, CheckCircle } from 'lucide-react';
 import { calculateTipRecommendations, tippingEtiquette } from '@/lib/utils';
 
 interface Vendor {
@@ -80,7 +80,7 @@ export default function CoupleTippingPage({ params }: { params: { slug: string }
   const [wedding, setWedding] = useState<Wedding | null>(null);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [tipAmounts, setTipAmounts] = useState<{[key: string]: number}>({});
-  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
 
@@ -333,7 +333,7 @@ export default function CoupleTippingPage({ params }: { params: { slug: string }
               All Set! Thank You!
             </h2>
             <p className="text-green-700 mb-4">
-              You've successfully tipped all your wedding vendors. 
+              You&apos;ve successfully tipped all your wedding vendors. 
               Your generosity is greatly appreciated!
             </p>
             <div className="bg-white rounded-lg p-4 inline-block">
@@ -373,6 +373,33 @@ function TipModal({
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  
+  // Define helper functions locally
+  const getRoleDisplayName = (role: string) => {
+    const roleMap: { [key: string]: string } = {
+      OFFICIANT: 'Officiant',
+      COORDINATOR: 'Wedding Coordinator', 
+      SETUP_ATTENDANT: 'Setup Team',
+      PHOTOGRAPHER: 'Photographer'
+    };
+    return roleMap[role] || role;
+  };
+
+  const getTipRecommendations = (vendor: Vendor) => {
+    if (vendor.customTipAmount) {
+      return {
+        low: vendor.customTipAmount,
+        medium: vendor.customTipAmount,
+        high: vendor.customTipAmount,
+      };
+    }
+    
+    return calculateTipRecommendations(
+      vendor.role, 
+      vendor.serviceHours, 
+      vendor.serviceRate
+    );
+  };
   
   const recommendations = getTipRecommendations(vendor);
 
