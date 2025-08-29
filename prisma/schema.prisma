@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Coordinator {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  company   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  weddings  Wedding[]
+  
+  @@map("coordinators")
+}
+
+model Wedding {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  coupleName   String
+  weddingDate  DateTime
+  venue        String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  coordinatorId String
+  coordinator   Coordinator @relation(fields: [coordinatorId], references: [id], onDelete: Cascade)
+  
+  vendors      WeddingVendor[]
+  tips         Tip[]
+  
+  @@map("weddings")
+}
+
+model Vendor {
+  id                String    @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  role              VendorRole
+  stripeAccountId   String?
+  venmoHandle       String?
+  cashAppHandle     String?
+  preferredPayment  PaymentMethod @default(STRIPE)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  weddingVendors    WeddingVendor[]
+  tips              Tip[]
+  
+  @@map("vendors")
+}
+
+model WeddingVendor {
+  id                String    @id @default(cuid())
+  serviceHours      Float?    // Length of service in hours
+  serviceRate       Float?    // Hourly or total rate
+  customTipAmount   Float?    // Custom tip amount set by coordinator
+  notes             String?
+  createdAt         DateTime  @default(now())
+  
+  weddingId         String
+  wedding           Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  
+  vendorId          String
+  vendor            Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  
+  tips              Tip[]
+  
+  @@unique([weddingId, vendorId])
+  @@map("wedding_vendors")
+}
+
+model Tip {
+  id                String        @id @default(cuid())
+  amount            Float
+  paymentMethod     PaymentMethod
+  paymentStatus     PaymentStatus @default(PENDING)
+  stripePaymentId   String?
+  venmoTransactionId String?
+  cashAppTransactionId String?
+  tipMessage        String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  weddingId         String
+  wedding           Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  
+  vendorId          String
+  vendor            Vendor        @relation(fields: [vendorId], references: [id])
+  
+  weddingVendorId   String
+  weddingVendor     WeddingVendor @relation(fields: [weddingVendorId], references: [id])
+  
+  @@map("tips")
+}
+
+enum VendorRole {
+  OFFICIANT
+  COORDINATOR
+  SETUP_ATTENDANT
+  PHOTOGRAPHER
+}
+
+enum PaymentMethod {
+  STRIPE
+  VENMO
+  CASHAPP
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
