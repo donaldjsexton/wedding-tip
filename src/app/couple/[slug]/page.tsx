@@ -76,20 +76,24 @@ const sampleWedding: Wedding = {
   ]
 };
 
-export default function CoupleTippingPage({ params }: { params: { slug: string } }) {
+export default function CoupleTippingPage({ params }: { params: Promise<{ slug: string }> }) {
   const [wedding, setWedding] = useState<Wedding | null>(null);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [tipAmounts, setTipAmounts] = useState<{[key: string]: number}>({});
-
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
+  const [slug, setSlug] = useState<string>('');
 
   useEffect(() => {
-    // For demo, use sample data. In real app, fetch from API
-    if (params.slug === 'sample-wedding-abc123') {
-      setWedding(sampleWedding);
-    }
-  }, [params.slug]);
+    // Handle async params in useEffect
+    params.then(({ slug }) => {
+      setSlug(slug);
+      // For demo, use sample data. In real app, fetch from API
+      if (slug === 'sample-wedding-abc123') {
+        setWedding(sampleWedding);
+      }
+    });
+  }, [params]);
 
   if (!wedding) {
     return (
