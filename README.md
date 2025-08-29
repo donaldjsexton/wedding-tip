@@ -100,12 +100,37 @@ The app supports three payment methods:
 
 ## Deployment
 
-Ready for Vercel deployment:
+### Vercel Deployment (Recommended)
 
-1. Push to GitHub
-2. Connect to Vercel
-3. Add environment variables
-4. Deploy!
+1. **Push to GitHub** (already done ✅)
+
+2. **Connect to Vercel**:
+   - Go to [vercel.com](https://vercel.com) and import your GitHub repo
+   - Choose the `wedding-tip-app` folder as the root directory
+
+3. **Configure Environment Variables** in Vercel dashboard:
+   ```
+   DATABASE_URL="your-production-database-url"
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_live_..."
+   STRIPE_SECRET_KEY="sk_live_..."
+   STRIPE_WEBHOOK_SECRET="whsec_..."
+   ```
+
+4. **Database Setup**:
+   - For production, use PostgreSQL instead of SQLite
+   - Recommended: [Neon](https://neon.tech) or [Supabase](https://supabase.com) (both have generous free tiers)
+   - Update `DATABASE_URL` to your PostgreSQL connection string
+   - Run `npx prisma db push` to create tables in production database
+
+5. **Deploy**: Vercel will automatically build and deploy!
+
+### Build Configuration
+
+The app includes optimized build configuration:
+- ✅ `postinstall` script runs `prisma generate`
+- ✅ `build` script includes Prisma generation
+- ✅ `vercel.json` specifies build commands
+- ✅ Production-ready bundle optimization
 
 ## Environment Variables
 
