@@ -76,8 +76,22 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Auth error:', error);
+    
+    // More detailed error logging for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace';
+    
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { 
+        error: 'Authentication failed',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error'
+      },
       { status: 500 }
     );
   }
