@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Heart, Plus, Calendar, Users, ChevronRight, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import WeddingCreationForm from '@/components/WeddingCreationForm';
 
 interface Wedding {
   id: string;
@@ -31,6 +32,7 @@ export default function CoordinatorDashboard() {
   const [weddings, setWeddings] = useState<Wedding[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
   const [coordinator, setCoordinator] = useState<Coordinator | null>(null);
   const router = useRouter();
 
@@ -67,6 +69,56 @@ export default function CoordinatorDashboard() {
   const handleLogout = () => {
     localStorage.removeItem('coordinator');
     router.push('/coordinator/login');
+  };
+
+  const handleCreateWedding = async (weddingData: {
+    coupleName: string;
+    weddingDate: string;
+    venue: string;
+    notes: string;
+    vendors: Array<{
+      name: string;
+      role: string;
+      email?: string;
+      phone?: string;
+      preferredPayment: string;
+      venmoHandle?: string;
+      cashAppHandle?: string;
+      serviceHours?: number;
+      serviceRate?: number;
+      customTipAmount?: number;
+    }>;
+  }) => {
+    if (!coordinator) return;
+    
+    setCreateLoading(true);
+    try {
+      const response = await fetch('/api/coordinator/weddings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...weddingData,
+          coordinatorEmail: coordinator.email
+        }),
+      });
+
+      if (response.ok) {
+        const newWedding = await response.json();
+        setWeddings(prev => [newWedding, ...prev]);
+        setShowCreateForm(false);
+        // Show success message or toast
+      } else {
+        const error = await response.json();
+        console.error('Failed to create wedding:', error);
+        // Show error message
+      }
+    } catch (error) {
+      console.error('Error creating wedding:', error);
+    } finally {
+      setCreateLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -227,34 +279,14 @@ export default function CoordinatorDashboard() {
         )}
       </div>
 
-      {/* Create Wedding Modal/Form - We'll implement this next */}
-      {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Create New Wedding</h2>
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-gray-600 text-center py-8">
-                Wedding creation form coming soon...
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Wedding Creation Form */}
+      {showCreateForm && coordinator && (
+        <WeddingCreationForm
+          onSubmit={handleCreateWedding}
+          onCancel={() => setShowCreateForm(false)}
+          loading={createLoading}
+          coordinatorEmail={coordinator.email}
+        />
       )}
     </div>
   );

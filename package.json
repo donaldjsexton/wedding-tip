@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate && npx prisma db push --accept-data-loss && next build --turbopack",
+    "build": "npx prisma generate && next build --turbopack",
+    "build:prod": "npx prisma generate && npx prisma db push --accept-data-loss && next build --turbopack",
     "postinstall": "npx prisma generate",
     "start": "next start",
     "lint": "eslint"

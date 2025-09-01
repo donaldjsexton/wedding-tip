@@ -35,7 +35,7 @@ export default function CoordinatorLogin() {
         const { error } = await response.json();
         setError(error || 'Login failed');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
