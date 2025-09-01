@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, CheckCircle, Clock, Edit, Share } from 'lucide-react';
 import Link from 'next/link';
+import VendorManagement from '@/components/VendorManagement';
 
 interface Vendor {
   id: string;
@@ -53,6 +54,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
   const [wedding, setWedding] = useState<Wedding | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showVendorManagement, setShowVendorManagement] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -76,6 +78,13 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
       router.push('/coordinator');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVendorAdded = () => {
+    // Refresh wedding data to show newly added vendor
+    if (wedding) {
+      fetchWedding(wedding.id);
     }
   };
 
@@ -299,8 +308,11 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                   <Users className="h-5 w-5 mr-2 text-purple-500" />
                   Vendors ({wedding.vendors.length})
                 </h2>
-                <button className="text-purple-600 hover:text-purple-700 font-medium text-sm">
-                  + Add Vendor
+                <button 
+                  onClick={() => setShowVendorManagement(true)}
+                  className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+                >
+                  + Manage Vendors
                 </button>
               </div>
 
@@ -459,6 +471,37 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
           </div>
         </div>
       </div>
+
+      {/* Vendor Management Modal */}
+      {showVendorManagement && wedding && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <Users className="h-6 w-6 text-purple-500 mr-2" />
+                  Manage Vendors - {wedding.coupleName}
+                </h2>
+                <button
+                  onClick={() => setShowVendorManagement(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <VendorManagement
+                weddingId={wedding.id}
+                coordinatorId={wedding.coordinator.id}
+                currentVendors={wedding.vendors}
+                onVendorAdded={handleVendorAdded}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

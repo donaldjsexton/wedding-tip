@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Heart, Plus, Calendar, Users, ChevronRight, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import WeddingCreationForm from '@/components/WeddingCreationForm';
+import SimpleWeddingCreationForm from '@/components/SimpleWeddingCreationForm';
 
 interface Wedding {
   id: string;
@@ -76,18 +76,6 @@ export default function CoordinatorDashboard() {
     weddingDate: string;
     venue: string;
     notes: string;
-    vendors: Array<{
-      name: string;
-      role: string;
-      email?: string;
-      phone?: string;
-      preferredPayment: string;
-      venmoHandle?: string;
-      cashAppHandle?: string;
-      serviceHours?: number;
-      serviceRate?: number;
-      customTipAmount?: number;
-    }>;
   }) => {
     if (!coordinator) return;
     
@@ -281,11 +269,10 @@ export default function CoordinatorDashboard() {
 
       {/* Wedding Creation Form */}
       {showCreateForm && coordinator && (
-        <WeddingCreationForm
+        <SimpleWeddingCreationForm
           onSubmit={handleCreateWedding}
           onCancel={() => setShowCreateForm(false)}
           loading={createLoading}
-          coordinatorEmail={coordinator.email}
         />
       )}
     </div>
