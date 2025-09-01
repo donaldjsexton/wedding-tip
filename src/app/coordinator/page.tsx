@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Heart, Plus, Calendar, Users, ChevronRight } from 'lucide-react';
+import { Heart, Plus, Calendar, Users, ChevronRight, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Wedding {
   id: string;
@@ -19,18 +20,41 @@ interface Wedding {
   }>;
 }
 
+interface Coordinator {
+  id: string;
+  email: string;
+  name: string;
+  company?: string;
+}
+
 export default function CoordinatorDashboard() {
   const [weddings, setWeddings] = useState<Wedding[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [coordinator, setCoordinator] = useState<Coordinator | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchWeddings();
-  }, []);
-
-  const fetchWeddings = async () => {
+    // Check if coordinator is logged in
+    const coordinatorData = localStorage.getItem('coordinator');
+    if (!coordinatorData) {
+      router.push('/coordinator/login');
+      return;
+    }
+    
     try {
-      const response = await fetch('/api/coordinator/weddings');
+      const coord = JSON.parse(coordinatorData);
+      setCoordinator(coord);
+      fetchWeddings(coord.id);
+    } catch (error) {
+      console.error('Invalid coordinator data:', error);
+      router.push('/coordinator/login');
+    }
+  }, [router]);
+
+  const fetchWeddings = async (coordinatorId: string) => {
+    try {
+      const response = await fetch(`/api/coordinator/weddings?coordinatorId=${coordinatorId}`);
       const data = await response.json();
       setWeddings(data);
     } catch (error) {
@@ -38,6 +62,11 @@ export default function CoordinatorDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('coordinator');
+    router.push('/coordinator/login');
   };
 
   const formatDate = (dateString: string) => {
@@ -59,7 +88,7 @@ export default function CoordinatorDashboard() {
     return roleMap[role] || role;
   };
 
-  if (loading) {
+  if (loading || !coordinator) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -77,17 +106,31 @@ export default function CoordinatorDashboard() {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center">
               <Heart className="h-8 w-8 text-purple-500 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-800">
-                Coordinator Dashboard
-              </h1>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Coordinator Dashboard
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Welcome back, {coordinator.name}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              New Wedding
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="inline-flex items-center bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                New Wedding
+              </button>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

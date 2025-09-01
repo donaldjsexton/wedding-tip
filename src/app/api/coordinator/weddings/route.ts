@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // For MVP, we'll use a simple approach without authentication
-    // In production, you'd want to authenticate the coordinator first
+    const { searchParams } = new URL(request.url);
+    const coordinatorId = searchParams.get('coordinatorId');
+
+    // Build the where clause based on coordinator ID
+    const whereClause = coordinatorId ? { coordinatorId } : {};
     
     const weddings = await prisma.wedding.findMany({
+      where: whereClause,
       include: {
         coordinator: true,
         vendors: {

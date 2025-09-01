@@ -71,3 +71,4 @@ export const tippingEtiquette = {
     "Consider extra for going above and beyond"
   ]
 }
+
