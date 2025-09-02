@@ -110,6 +110,18 @@ export async function POST(request: NextRequest) {
     const invitationUrl = `${process.env.NEXTAUTH_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/vendor/register/${invitation.token}`;
 
     try {
+      // Check if RESEND_API_KEY is configured
+      if (!process.env.RESEND_API_KEY) {
+        console.log('RESEND_API_KEY not configured, skipping email send');
+        return NextResponse.json({
+          type: 'invitation_created_email_skipped',
+          invitation,
+          invitationUrl,
+          message: 'Vendor invitation created successfully (email skipped - RESEND_API_KEY not configured)',
+          registrationUrl: invitationUrl
+        }, { status: 201 });
+      }
+
       // Send the email
       await sendVendorInvitation({
         vendorName,
