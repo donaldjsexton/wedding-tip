@@ -16,16 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause for search
-    const whereClause: {
-      status: 'ACTIVE';
-      isProfileComplete: true;
-      OR?: Array<{
-        name?: { contains: string; mode: 'insensitive' };
-        email?: { contains: string; mode: 'insensitive' };
-        serviceArea?: { contains: string; mode: 'insensitive' };
-      }>;
-      role?: string;
-    } = {
+    const whereClause: any = {
       status: 'ACTIVE',
       isProfileComplete: true,
     };
@@ -41,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Add role filter
     if (role && role !== 'ALL') {
-      whereClause.role = role;
+      whereClause.role = role as 'OFFICIANT' | 'COORDINATOR' | 'SETUP_ATTENDANT' | 'PHOTOGRAPHER';
     }
 
     const vendors = await prisma.vendor.findMany({

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Heart, CheckCircle, Clock, MapPin, Phone, Globe, DollarSign, User } from 'lucide-react';
 import Link from 'next/link';
 
