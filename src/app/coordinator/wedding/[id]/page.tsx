@@ -57,12 +57,6 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
   const [showVendorManagement, setShowVendorManagement] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    params.then(({ id }) => {
-      fetchWedding(id);
-    });
-  }, [params, fetchWedding]);
-
   const fetchWedding = async (id: string) => {
     try {
       const response = await fetch(`/api/coordinator/wedding/${id}`);
@@ -80,6 +74,12 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    params.then(({ id }) => {
+      fetchWedding(id);
+    });
+  }, [params, fetchWedding]);
 
   const handleVendorAdded = () => {
     // Refresh wedding data to show newly added vendor
