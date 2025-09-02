@@ -155,7 +155,7 @@ export default function VendorManagement({
 
   const getRoleEmoji = (role: string) => {
     const roleInfo = VENDOR_ROLES.find(r => r.value === role);
-    return roleInfo?.emoji || '💼';
+    return (roleInfo && 'emoji' in roleInfo) ? roleInfo.emoji : '💼';
   };
 
   const getPaymentIcon = (method: string) => {
