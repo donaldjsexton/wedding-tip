@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause for search
-    const whereClause: any = {
+    const whereClause: Prisma.VendorWhereInput = {
       status: 'ACTIVE',
       isProfileComplete: true,
     };
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Add role filter
     if (role && role !== 'ALL') {
-      whereClause.role = role as 'OFFICIANT' | 'COORDINATOR' | 'SETUP_ATTENDANT' | 'PHOTOGRAPHER';
+      whereClause.role = role as Prisma.EnumVendorRoleFilter;
     }
 
     const vendors = await prisma.vendor.findMany({
