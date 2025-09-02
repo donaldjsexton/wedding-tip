@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendVendorInvitation } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,16 +106,49 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Send invitation email here
-    // For now, we'll return the invitation details
-    const invitationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/vendor/register/${invitation.token}`;
+    // Send invitation email
+    const invitationUrl = `${process.env.NEXTAUTH_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/vendor/register/${invitation.token}`;
 
-    return NextResponse.json({
-      type: 'invitation_sent',
-      invitation,
-      invitationUrl,
-      message: 'Vendor invitation created successfully'
-    }, { status: 201 });
+    try {
+      // Send the email
+      await sendVendorInvitation({
+        vendorName,
+        vendorEmail: email,
+        coordinatorName: invitation.coordinator.name,
+        coordinatorCompany: invitation.coordinator.company,
+        coordinatorEmail: invitation.coordinator.email,
+        weddingDetails: {
+          coupleName: invitation.wedding.coupleName,
+          weddingDate: invitation.wedding.weddingDate.toISOString(),
+          venue: invitation.wedding.venue
+        },
+        role,
+        invitationUrl,
+        message
+      });
+
+      console.log(`Vendor invitation email sent successfully to ${email}`);
+
+      return NextResponse.json({
+        type: 'invitation_sent',
+        invitation,
+        invitationUrl,
+        message: 'Vendor invitation sent successfully'
+      }, { status: 201 });
+
+    } catch (emailError) {
+      console.error('Failed to send invitation email:', emailError);
+      
+      // Email failed, but invitation was created in database
+      // Return success but with email warning
+      return NextResponse.json({
+        type: 'invitation_created_email_failed',
+        invitation,
+        invitationUrl,
+        message: 'Vendor invitation created but email delivery failed. Please send the registration link manually.',
+        warning: 'Email delivery failed - check RESEND_API_KEY environment variable'
+      }, { status: 201 });
+    }
 
   } catch (error) {
     console.error('Error creating vendor invitation:', error);
