@@ -117,8 +117,9 @@ export async function POST(request: NextRequest) {
           type: 'invitation_created_email_skipped',
           invitation,
           invitationUrl,
-          message: 'Vendor invitation created successfully (email skipped - RESEND_API_KEY not configured)',
-          registrationUrl: invitationUrl
+          message: `Vendor invitation created! Send this registration link to ${vendorName}: ${invitationUrl}`,
+          registrationUrl: invitationUrl,
+          actionRequired: `Email not configured - please manually send the registration link to ${email}`
         }, { status: 201 });
       }
 

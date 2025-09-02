@@ -32,7 +32,7 @@ export async function sendVendorInvitation({
 }: SendVendorInvitationParams) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TipWedding <noreply@tipwedding.com>', // Update with your domain
+      from: 'TipWedding <onboarding@resend.dev>', // Using Resend's default domain for testing
       to: [vendorEmail],
       subject: `Wedding Vendor Invitation - ${weddingDetails.coupleName}`,
       react: VendorInvitationEmail({
