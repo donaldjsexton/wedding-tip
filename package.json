@@ -6,6 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "npx prisma generate && next build --turbopack",
     "build:prod": "npx prisma generate && npx prisma db push --accept-data-loss && next build --turbopack",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate deploy",
     "postinstall": "npx prisma generate",
     "start": "next start",
     "lint": "eslint"

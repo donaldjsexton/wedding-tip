@@ -1,4 +1,4 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build:prod"
+  "buildCommand": "npm run build"
 }
