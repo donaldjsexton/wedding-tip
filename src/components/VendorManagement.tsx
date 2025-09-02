@@ -62,6 +62,12 @@ export default function VendorManagement({
     message: ''
   });
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{
+    type: string;
+    message: string;
+    registrationUrl?: string;
+    actionRequired?: string;
+  } | null>(null);
 
   // Search for vendors
   const searchVendors = useCallback(async () => {
@@ -141,13 +147,30 @@ export default function VendorManagement({
       if (response.ok) {
         const data = await response.json();
         console.log('Invitation response:', data);
+        
         if (data.type === 'existing_vendor_added') {
           // Existing vendor was added
           onVendorAdded();
+          setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
+          setShowInviteForm(false);
+        } else if (data.type === 'invitation_created_email_skipped') {
+          // Email was skipped, show registration URL to coordinator
+          setInviteResult({
+            type: data.type,
+            message: data.message,
+            registrationUrl: data.registrationUrl,
+            actionRequired: data.actionRequired
+          });
+          // Reset form but keep modal open to show result
+          setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
+        } else {
+          // Email was sent successfully
+          setInviteResult({
+            type: data.type,
+            message: data.message || 'Vendor invitation sent successfully!'
+          });
+          setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
         }
-        // Reset form and close
-        setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
-        setShowInviteForm(false);
       } else {
         const errorData = await response.json();
         console.error('Invitation failed:', errorData);
@@ -167,6 +190,15 @@ export default function VendorManagement({
   const getRoleEmoji = (role: string) => {
     const roleInfo = VENDOR_ROLES.find(r => r.value === role);
     return (roleInfo && 'emoji' in roleInfo) ? roleInfo.emoji : '💼';
+  };
+
+  const copyRegistrationUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      // Could add a toast notification here
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+    }
   };
 
   const getPaymentIcon = (method: string) => {
@@ -389,6 +421,61 @@ export default function VendorManagement({
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Invitation Result Modal */}
+        {inviteResult && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {inviteResult.type === 'invitation_created_email_skipped' ? '📧 Email Configuration Required' : '✅ Invitation Sent'}
+                </h3>
+                <p className="text-gray-600 mb-4">{inviteResult.message}</p>
+                
+                {inviteResult.registrationUrl && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-yellow-800 font-medium mb-2">
+                      ⚠️ {inviteResult.actionRequired}
+                    </p>
+                    <p className="text-sm text-gray-700 mb-3">
+                      Registration Link:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={inviteResult.registrationUrl}
+                        readOnly
+                        className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-sm font-mono"
+                      />
+                      <button
+                        onClick={() => copyRegistrationUrl(inviteResult.registrationUrl!)}
+                        className="px-3 py-2 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+                        title="Copy to clipboard"
+                      >
+                        📋
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Copy this link and send it to the vendor via email, text, or your preferred communication method.
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setInviteResult(null);
+                    setShowInviteForm(false);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}
