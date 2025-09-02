@@ -29,7 +29,6 @@ interface WeddingCreationFormProps {
   onSubmit: (weddingData: WeddingFormData) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
-  coordinatorEmail: string;
 }
 
 const VENDOR_ROLES = [
@@ -48,8 +47,7 @@ const PAYMENT_METHODS = [
 export default function WeddingCreationForm({ 
   onSubmit, 
   onCancel, 
-  loading = false, 
-  coordinatorEmail 
+  loading = false
 }: WeddingCreationFormProps) {
   const [formData, setFormData] = useState<WeddingFormData>({
     coupleName: '',

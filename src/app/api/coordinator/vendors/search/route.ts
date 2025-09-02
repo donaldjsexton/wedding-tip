@@ -16,7 +16,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause for search
-    const whereClause: any = {
+    const whereClause: {
+      status: 'ACTIVE';
+      isProfileComplete: true;
+      OR?: Array<{
+        name?: { contains: string; mode: 'insensitive' };
+        email?: { contains: string; mode: 'insensitive' };
+        serviceArea?: { contains: string; mode: 'insensitive' };
+      }>;
+      role?: string;
+    } = {
       status: 'ACTIVE',
       isProfileComplete: true,
     };

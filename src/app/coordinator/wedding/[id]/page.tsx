@@ -61,7 +61,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
     params.then(({ id }) => {
       fetchWedding(id);
     });
-  }, [params]);
+  }, [params, fetchWedding]);
 
   const fetchWedding = async (id: string) => {
     try {

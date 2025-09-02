@@ -82,7 +82,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
   const [tipAmounts, setTipAmounts] = useState<{[key: string]: number}>({});
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
-  const [slug, setSlug] = useState<string>('');
+
 
   useEffect(() => {
     // Handle async params in useEffect

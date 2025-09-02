@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, CheckCircle, Clock, MapPin, Mail, Phone, Globe, DollarSign, User } from 'lucide-react';
+import { Heart, CheckCircle, Clock, MapPin, Phone, Globe, DollarSign, User } from 'lucide-react';
 import Link from 'next/link';
 
 interface Invitation {
@@ -53,7 +53,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<'invitation' | 'registration' | 'success'>('invitation');
   const [token, setToken] = useState('');
-  const router = useRouter();
+
 
   const [formData, setFormData] = useState<VendorFormData>({
     name: '',
@@ -492,7 +492,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
                           name="preferredPayment"
                           value={method.value}
                           checked={formData.preferredPayment === method.value}
-                          onChange={(e) => setFormData(prev => ({ ...prev, preferredPayment: e.target.value as any }))}
+                          onChange={(e) => setFormData(prev => ({ ...prev, preferredPayment: e.target.value as 'STRIPE' | 'VENMO' | 'CASHAPP' | 'ZELLE' }))}
                           className="sr-only"
                         />
                         <div className="flex items-center">

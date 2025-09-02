@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, User, Mail, Phone, ExternalLink, Check, Clock, X, Send } from 'lucide-react';
+import { Search, Plus, User, Mail, ExternalLink, Check, Send } from 'lucide-react';
 
 interface Vendor {
   id: string;
@@ -97,7 +97,7 @@ export default function VendorManagement({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedRole]);
+  }, [searchQuery, selectedRole, coordinatorId, searchVendors]);
 
   const addExistingVendor = async (vendorId: string) => {
     try {
