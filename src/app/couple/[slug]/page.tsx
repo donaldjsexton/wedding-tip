@@ -87,7 +87,6 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
   useEffect(() => {
     // Handle async params in useEffect
     params.then(({ slug }) => {
-      setSlug(slug);
       // For demo, use sample data. In real app, fetch from API
       if (slug === 'sample-wedding-abc123') {
         setWedding(sampleWedding);
