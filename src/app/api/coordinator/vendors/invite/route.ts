@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         vendorName,
         vendorEmail: email,
         coordinatorName: invitation.coordinator.name,
-        coordinatorCompany: invitation.coordinator.company,
+        coordinatorCompany: invitation.coordinator.company || undefined,
         coordinatorEmail: invitation.coordinator.email,
         weddingDetails: {
           coupleName: invitation.wedding.coupleName,
