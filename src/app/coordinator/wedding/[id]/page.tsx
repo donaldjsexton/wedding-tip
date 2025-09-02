@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, CheckCircle, Clock, Edit, Share } from 'lucide-react';
 import Link from 'next/link';
@@ -57,7 +57,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
   const [showVendorManagement, setShowVendorManagement] = useState(false);
   const router = useRouter();
 
-  const fetchWedding = async (id: string) => {
+  const fetchWedding = useCallback(async (id: string) => {
     try {
       const response = await fetch(`/api/coordinator/wedding/${id}`);
       if (response.ok) {
@@ -73,7 +73,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     params.then(({ id }) => {

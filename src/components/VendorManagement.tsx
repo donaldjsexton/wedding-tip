@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, User, Mail, ExternalLink, Check, Send } from 'lucide-react';
 
 interface Vendor {
@@ -64,7 +64,7 @@ export default function VendorManagement({
   const [inviteLoading, setInviteLoading] = useState(false);
 
   // Search for vendors
-  const searchVendors = async () => {
+  const searchVendors = useCallback(async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
@@ -88,7 +88,7 @@ export default function VendorManagement({
     } finally {
       setSearchLoading(false);
     }
-  };
+  }, [searchQuery, selectedRole, coordinatorId]);
 
   // Debounced search
   useEffect(() => {

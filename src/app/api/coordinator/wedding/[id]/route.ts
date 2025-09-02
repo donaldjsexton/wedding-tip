@@ -9,10 +9,15 @@ export async function GET(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Wedding ID is required' },
         { status: 400 }
       );
+      // Add CORS headers
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return errorResponse;
     }
 
     const wedding = await prisma.wedding.findUnique({
@@ -63,13 +68,25 @@ export async function GET(
     });
 
     if (!wedding) {
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Wedding not found' },
         { status: 404 }
       );
+      // Add CORS headers
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return errorResponse;
     }
 
-    return NextResponse.json(wedding);
+    const response = NextResponse.json(wedding);
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   } catch (error) {
     console.error('Error fetching wedding:', error);
     
@@ -80,13 +97,18 @@ export async function GET(
       timestamp: new Date().toISOString()
     });
     
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { 
         error: 'Failed to fetch wedding',
         details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error'
       },
       { status: 500 }
     );
+    // Add CORS headers
+    errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+    errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return errorResponse;
   }
 }
 
@@ -99,10 +121,15 @@ export async function PUT(
     const body = await request.json();
 
     if (!id) {
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Wedding ID is required' },
         { status: 400 }
       );
+      // Add CORS headers
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return errorResponse;
     }
 
     const { coupleName, weddingDate, venue, notes } = body;
@@ -155,7 +182,14 @@ export async function PUT(
       }
     });
 
-    return NextResponse.json(updatedWedding);
+    const response = NextResponse.json(updatedWedding);
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   } catch (error) {
     console.error('Error updating wedding:', error);
     
@@ -166,13 +200,18 @@ export async function PUT(
       timestamp: new Date().toISOString()
     });
     
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { 
         error: 'Failed to update wedding',
         details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error'
       },
       { status: 500 }
     );
+    // Add CORS headers
+    errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+    errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return errorResponse;
   }
 }
 
@@ -184,10 +223,15 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Wedding ID is required' },
         { status: 400 }
       );
+      // Add CORS headers
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return errorResponse;
     }
 
     // Delete wedding (cascade will handle related records)
@@ -195,10 +239,17 @@ export async function DELETE(
       where: { id }
     });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { message: 'Wedding deleted successfully' },
       { status: 200 }
     );
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   } catch (error) {
     console.error('Error deleting wedding:', error);
     
@@ -209,12 +260,29 @@ export async function DELETE(
       timestamp: new Date().toISOString()
     });
     
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { 
         error: 'Failed to delete wedding',
         details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error'
       },
       { status: 500 }
     );
+    // Add CORS headers
+    errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+    errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return errorResponse;
   }
+}
+
+// Handle OPTIONS requests for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }
