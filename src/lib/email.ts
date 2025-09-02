@@ -1,7 +1,8 @@
 import { Resend } from 'resend';
 import VendorInvitationEmail from '@/components/emails/VendorInvitationEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with a fallback to prevent build errors
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
 
 interface SendVendorInvitationParams {
   vendorName: string;

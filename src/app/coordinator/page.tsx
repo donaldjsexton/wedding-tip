@@ -52,7 +52,7 @@ export default function CoordinatorDashboard() {
       console.error('Invalid coordinator data:', error);
       router.push('/coordinator/login');
     }
-  }, [router]);
+  }, [router, fetchWeddings]);
 
   const fetchWeddings = useCallback(async (coordinatorId: string) => {
     try {
