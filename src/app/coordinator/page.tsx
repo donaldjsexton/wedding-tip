@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Heart, Plus, Calendar, Users, ChevronRight, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,7 +54,7 @@ export default function CoordinatorDashboard() {
     }
   }, [router]);
 
-  const fetchWeddings = async (coordinatorId: string) => {
+  const fetchWeddings = useCallback(async (coordinatorId: string) => {
     try {
       const response = await fetch(`/api/coordinator/weddings?coordinatorId=${coordinatorId}`);
       const data = await response.json();
@@ -64,7 +64,7 @@ export default function CoordinatorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('coordinator');

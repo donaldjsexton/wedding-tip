@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Heart, CheckCircle, Clock, MapPin, Phone, Globe, DollarSign, User } from 'lucide-react';
 import Link from 'next/link';
 
@@ -70,14 +70,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    params.then(({ token }) => {
-      setToken(token);
-      fetchInvitation(token);
-    });
-  }, [params]);
-
-  const fetchInvitation = async (invitationToken: string) => {
+  const fetchInvitation = useCallback(async (invitationToken: string) => {
     try {
       const response = await fetch(`/api/vendor/invitation/${invitationToken}`);
       if (response.ok) {
@@ -109,7 +102,14 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    params.then(({ token }) => {
+      setToken(token);
+      fetchInvitation(token);
+    });
+  }, [params, fetchInvitation]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
