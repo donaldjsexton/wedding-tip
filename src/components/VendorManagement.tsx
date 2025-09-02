@@ -192,7 +192,7 @@ export default function VendorManagement({
           >
             {VENDOR_ROLES.map(role => (
               <option key={role.value} value={role.value}>
-                {role.emoji ? `${role.emoji} ` : ''}{role.label}
+                {'emoji' in role && role.emoji ? `${role.emoji} ` : ''}{role.label}
               </option>
             ))}
           </select>
