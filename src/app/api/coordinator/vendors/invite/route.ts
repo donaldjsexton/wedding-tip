@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         weddingDetails: {
           coupleName: invitation.wedding.coupleName,
           weddingDate: invitation.wedding.weddingDate.toISOString(),
-          venue: invitation.wedding.venue
+          venue: invitation.wedding.venue || undefined
         },
         role,
         invitationUrl,
