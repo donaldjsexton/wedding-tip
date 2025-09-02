@@ -119,6 +119,12 @@ export default function VendorManagement({
 
   const sendInvitation = async () => {
     if (!inviteForm.email || !inviteForm.vendorName) return;
+    
+    console.log('Sending invitation with data:', {
+      ...inviteForm,
+      weddingId,
+      coordinatorId
+    });
 
     setInviteLoading(true);
     try {
@@ -134,6 +140,7 @@ export default function VendorManagement({
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Invitation response:', data);
         if (data.type === 'existing_vendor_added') {
           // Existing vendor was added
           onVendorAdded();
@@ -141,6 +148,10 @@ export default function VendorManagement({
         // Reset form and close
         setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
         setShowInviteForm(false);
+      } else {
+        const errorData = await response.json();
+        console.error('Invitation failed:', errorData);
+        alert(`Failed to send invitation: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error sending invitation:', error);
