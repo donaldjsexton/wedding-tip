@@ -58,10 +58,9 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: [
-        { _relevance: query ? { fields: ['name'], search: query, sort: 'desc' } : undefined },
-        { name: 'asc' }
-      ].filter(Boolean),
+      orderBy: {
+        name: 'asc'
+      },
       take: 50 // Limit results
     });
 
