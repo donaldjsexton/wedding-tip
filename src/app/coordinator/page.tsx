@@ -36,6 +36,18 @@ export default function CoordinatorDashboard() {
   const [coordinator, setCoordinator] = useState<Coordinator | null>(null);
   const router = useRouter();
 
+  const fetchWeddings = useCallback(async (coordinatorId: string) => {
+    try {
+      const response = await fetch(`/api/coordinator/weddings?coordinatorId=${coordinatorId}`);
+      const data = await response.json();
+      setWeddings(data);
+    } catch (error) {
+      console.error('Error fetching weddings:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Check if coordinator is logged in
     const coordinatorData = localStorage.getItem('coordinator');
@@ -53,18 +65,6 @@ export default function CoordinatorDashboard() {
       router.push('/coordinator/login');
     }
   }, [router, fetchWeddings]);
-
-  const fetchWeddings = useCallback(async (coordinatorId: string) => {
-    try {
-      const response = await fetch(`/api/coordinator/weddings?coordinatorId=${coordinatorId}`);
-      const data = await response.json();
-      setWeddings(data);
-    } catch (error) {
-      console.error('Error fetching weddings:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('coordinator');
