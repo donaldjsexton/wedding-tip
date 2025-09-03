@@ -156,6 +156,13 @@ export default function CoordinatorDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Link
+                href="/coordinator/vendors"
+                className="inline-flex items-center text-purple-600 hover:text-purple-700 font-medium py-2 px-4 rounded-lg hover:bg-purple-50 transition-colors"
+              >
+                <Users className="h-5 w-5 mr-2" />
+                Manage Vendors
+              </Link>
               <button
                 onClick={() => setShowCreateForm(true)}
                 className="inline-flex items-center bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"

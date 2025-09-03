@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, User, Mail, ExternalLink, Check, Send } from 'lucide-react';
+import { Search, Plus, User, Mail, ExternalLink, Check, Send, Users } from 'lucide-react';
+import Link from 'next/link';
 
 interface Vendor {
   id: string;
@@ -55,6 +56,9 @@ export default function VendorManagement({
   const [searchResults, setSearchResults] = useState<Vendor[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'search' | 'roster' | 'invite'>('roster');
+  const [rosterVendors, setRosterVendors] = useState<Vendor[]>([]);
+  const [rosterLoading, setRosterLoading] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     email: '',
     vendorName: '',
@@ -104,6 +108,34 @@ export default function VendorManagement({
 
     return () => clearTimeout(timer);
   }, [searchQuery, selectedRole, coordinatorId, searchVendors]);
+
+  // Load vendor roster
+  const loadRosterVendors = useCallback(async () => {
+    setRosterLoading(true);
+    try {
+      const response = await fetch(`/api/coordinator/vendors?coordinatorId=${coordinatorId}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out vendors that are already added to this wedding
+        const availableVendors = (data.vendors || []).filter((vendor: Vendor) => 
+          !currentVendors.some(cv => cv.vendor.id === vendor.id) && 
+          vendor.status === 'ACTIVE'
+        );
+        setRosterVendors(availableVendors);
+      }
+    } catch (error) {
+      console.error('Error loading roster vendors:', error);
+    } finally {
+      setRosterLoading(false);
+    }
+  }, [coordinatorId, currentVendors]);
+
+  // Load roster when component mounts or when switching to roster tab
+  useEffect(() => {
+    if (activeTab === 'roster') {
+      loadRosterVendors();
+    }
+  }, [activeTab, loadRosterVendors]);
 
   const addExistingVendor = async (vendorId: string) => {
     try {
@@ -213,9 +245,114 @@ export default function VendorManagement({
 
   return (
     <div className="space-y-6">
-      {/* Search Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Search Existing Vendors</h3>
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('roster')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'roster' 
+                ? 'text-purple-600 bg-purple-50 border-b-2 border-purple-600' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Users className="h-4 w-4 inline mr-2" />
+            My Vendor Roster
+          </button>
+          <button
+            onClick={() => setActiveTab('search')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'search' 
+                ? 'text-purple-600 bg-purple-50 border-b-2 border-purple-600' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Search className="h-4 w-4 inline mr-2" />
+            Search Platform
+          </button>
+          <button
+            onClick={() => setActiveTab('invite')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'invite' 
+                ? 'text-purple-600 bg-purple-50 border-b-2 border-purple-600' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Plus className="h-4 w-4 inline mr-2" />
+            Invite New Vendor
+          </button>
+        </div>
+
+        {/* Roster Tab */}
+        {activeTab === 'roster' && (
+          <div className="p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Vendor Roster</h3>
+              <p className="text-sm text-gray-600">
+                Add vendors from your roster that you've worked with before. 
+                <Link href="/coordinator/vendors" className="text-purple-600 hover:underline ml-1">
+                  Manage full roster →
+                </Link>
+              </p>
+            </div>
+
+            {rosterLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              </div>
+            ) : rosterVendors.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2">No available vendors in your roster.</p>
+                <p className="text-sm text-gray-400">
+                  <Link href="/coordinator/vendors" className="text-purple-600 hover:underline">
+                    Add vendors to your roster
+                  </Link> to quickly add them to weddings.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {rosterVendors.map((vendor) => (
+                  <div key={vendor.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">
+                        {getRoleEmoji(vendor.role)}
+                      </span>
+                      <div>
+                        <h4 className="font-medium text-gray-800">{vendor.name}</h4>
+                        <div className="text-sm text-gray-500">
+                          <p className="text-purple-600">{VENDOR_ROLES.find(r => r.value === vendor.role)?.label}</p>
+                          {vendor.email && <p>📧 {vendor.email}</p>}
+                          {vendor.serviceArea && <p>📍 {vendor.serviceArea}</p>}
+                          {vendor.totalWeddings > 0 && (
+                            <p className="text-xs">✨ {vendor.totalWeddings} weddings, {vendor.weddingsWithCoordinator} with you</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => addExistingVendor(vendor.id)}
+                      className="inline-flex items-center bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Search Tab */}
+        {activeTab === 'search' && (
+          <div className="p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Search Platform Vendors</h3>
+              <p className="text-sm text-gray-600">
+                Search for vendors across the platform who have worked with other coordinators.
+              </p>
+            </div>
         
         <div className="flex gap-4 mb-4">
           <div className="flex-1 relative">
@@ -317,26 +454,23 @@ export default function VendorManagement({
           <div className="text-center py-6 text-gray-500">
             <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p>No vendors found matching &quot;{searchQuery}&quot;</p>
-            <p className="text-sm">Try a different search term or invite a new vendor below.</p>
+            <p className="text-sm">Try a different search term or invite a new vendor.</p>
           </div>
         )}
-      </div>
+          </div>
+        )}
 
-      {/* Invite New Vendor Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Invite New Vendor</h3>
-          <button
-            onClick={() => setShowInviteForm(!showInviteForm)}
-            className="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {showInviteForm ? 'Cancel' : 'Invite New Vendor'}
-          </button>
-        </div>
+        {/* Invite New Vendor Tab */}
+        {activeTab === 'invite' && (
+          <div className="p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Invite New Vendor</h3>
+              <p className="text-sm text-gray-600">
+                Send an invitation to a vendor not yet on the platform.
+              </p>
+            </div>
 
-        {showInviteForm && (
-          <div className="border-t pt-4 space-y-4">
+            <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -424,8 +558,9 @@ export default function VendorManagement({
             </div>
           </div>
         )}
+      </div>
 
-        {/* Invitation Result Modal */}
+      {/* Invitation Result Modal */}
         {inviteResult && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-md w-full p-6">
