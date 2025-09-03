@@ -24,10 +24,12 @@ export async function GET(request: NextRequest) {
 
     // Add search query filter
     if (query) {
+      // SQLite doesn't support mode: 'insensitive', so we'll use contains without it
+      // For better case-insensitive search in production, consider using PostgreSQL
       whereClause.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } },
-        { serviceArea: { contains: query, mode: 'insensitive' } }
+        { name: { contains: query } },
+        { email: { contains: query } },
+        { serviceArea: { contains: query } }
       ];
     }
 

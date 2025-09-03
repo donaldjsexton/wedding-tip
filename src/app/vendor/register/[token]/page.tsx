@@ -33,17 +33,21 @@ interface VendorFormData {
   bio: string;
   website: string;
   serviceArea: string;
-  preferredPayment: 'STRIPE' | 'VENMO' | 'CASHAPP' | 'ZELLE';
+  acceptsStripe: boolean;
+  acceptsVenmo: boolean;
+  acceptsCashApp: boolean;
+  acceptsZelle: boolean;
+  stripeAccountId: string;
   venmoHandle: string;
   cashAppHandle: string;
   zelleContact: string;
 }
 
 const PAYMENT_METHODS = [
-  { value: 'STRIPE', label: 'Credit/Debit Card', icon: '💳', description: 'Secure card payments' },
-  { value: 'VENMO', label: 'Venmo', icon: '💜', description: 'Quick mobile payments', field: 'venmoHandle', placeholder: '@username' },
-  { value: 'CASHAPP', label: 'Cash App', icon: '💚', description: 'Instant money transfer', field: 'cashAppHandle', placeholder: '$username' },
-  { value: 'ZELLE', label: 'Zelle', icon: '⚡', description: 'Bank-to-bank transfer', field: 'zelleContact', placeholder: 'Phone or email' },
+  { key: 'acceptsStripe', label: 'Credit/Debit Card', icon: '💳', description: 'Secure card payments', detailField: 'stripeAccountId', detailLabel: 'Stripe Account ID (optional)', placeholder: 'acct_123456789' },
+  { key: 'acceptsVenmo', label: 'Venmo', icon: '💜', description: 'Quick mobile payments', detailField: 'venmoHandle', detailLabel: 'Venmo Handle', placeholder: '@username' },
+  { key: 'acceptsCashApp', label: 'Cash App', icon: '💚', description: 'Instant money transfer', detailField: 'cashAppHandle', detailLabel: 'Cash App Handle', placeholder: '$username' },
+  { key: 'acceptsZelle', label: 'Zelle', icon: '⚡', description: 'Bank-to-bank transfer', detailField: 'zelleContact', detailLabel: 'Zelle Contact', placeholder: 'Phone number or email' },
 ] as const;
 
 export default function VendorRegistration({ params }: { params: Promise<{ token: string }> }) {
@@ -62,7 +66,11 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
     bio: '',
     website: '',
     serviceArea: '',
-    preferredPayment: 'STRIPE',
+    acceptsStripe: true,
+    acceptsVenmo: false,
+    acceptsCashApp: false,
+    acceptsZelle: false,
+    stripeAccountId: '',
     venmoHandle: '',
     cashAppHandle: '',
     zelleContact: ''
@@ -128,17 +136,23 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
       newErrors.phone = 'Phone number is required';
     }
 
+    // Validate that at least one payment method is enabled
+    const hasPaymentMethod = formData.acceptsStripe || formData.acceptsVenmo || formData.acceptsCashApp || formData.acceptsZelle;
+    if (!hasPaymentMethod) {
+      newErrors.payment = 'At least one payment method must be enabled';
+    }
+
     // Validate payment method specific fields
-    if (formData.preferredPayment === 'VENMO' && !formData.venmoHandle.trim()) {
-      newErrors.venmoHandle = 'Venmo handle is required';
+    if (formData.acceptsVenmo && !formData.venmoHandle.trim()) {
+      newErrors.venmoHandle = 'Venmo handle is required when Venmo is enabled';
     }
 
-    if (formData.preferredPayment === 'CASHAPP' && !formData.cashAppHandle.trim()) {
-      newErrors.cashAppHandle = 'Cash App handle is required';
+    if (formData.acceptsCashApp && !formData.cashAppHandle.trim()) {
+      newErrors.cashAppHandle = 'Cash App handle is required when Cash App is enabled';
     }
 
-    if (formData.preferredPayment === 'ZELLE' && !formData.zelleContact.trim()) {
-      newErrors.zelleContact = 'Zelle contact is required';
+    if (formData.acceptsZelle && !formData.zelleContact.trim()) {
+      newErrors.zelleContact = 'Zelle contact information is required when Zelle is enabled';
     }
 
     setErrors(newErrors);
