@@ -14,7 +14,9 @@ export async function GET() {
       message: 'Database connection successful',
       coordinatorCount,
       timestamp: new Date().toISOString(),
-      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set',
+      resendApiKey: process.env.RESEND_API_KEY ? (process.env.RESEND_API_KEY === 'dummy-key-for-build' ? 'Dummy key' : 'Set') : 'Not set',
+      environment: process.env.NODE_ENV || 'unknown'
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -27,7 +29,9 @@ export async function GET() {
         message: 'Database connection failed',
         error: errorMessage,
         timestamp: new Date().toISOString(),
-        databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+        databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set',
+        resendApiKey: process.env.RESEND_API_KEY ? (process.env.RESEND_API_KEY === 'dummy-key-for-build' ? 'Dummy key' : 'Set') : 'Not set',
+        environment: process.env.NODE_ENV || 'unknown'
       },
       { status: 500 }
     );
