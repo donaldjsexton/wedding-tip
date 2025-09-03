@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
       await prisma.$queryRaw`SELECT "preferredPayment" FROM vendors LIMIT 1`;
       needsMigration = true;
       console.log('✅ Found preferredPayment column - migration needed');
-    } catch (error: any) {
-      if (error.message.includes('column') && error.message.includes('preferredPayment') && error.message.includes('does not exist')) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('column') && errorMessage.includes('preferredPayment') && errorMessage.includes('does not exist')) {
         console.log('✅ Migration already completed - preferredPayment column not found');
         return NextResponse.json({ 
           success: true, 
@@ -96,12 +97,13 @@ export async function POST(request: NextRequest) {
       sampleVendor: sampleVendor
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Migration failed:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ 
       success: false, 
       error: 'Migration failed', 
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 });
   }
 }
@@ -114,8 +116,9 @@ export async function GET() {
     try {
       await prisma.$queryRaw`SELECT "preferredPayment" FROM vendors LIMIT 1`;
       hasPrefPayment = true;
-    } catch (error: any) {
-      if (error.message.includes('column') && error.message.includes('preferredPayment') && error.message.includes('does not exist')) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('column') && errorMessage.includes('preferredPayment') && errorMessage.includes('does not exist')) {
         hasPrefPayment = false;
       } else {
         throw error;
@@ -127,7 +130,7 @@ export async function GET() {
     try {
       await prisma.$queryRaw`SELECT "acceptsStripe", "acceptsVenmo", "acceptsCashApp", "acceptsZelle" FROM vendors LIMIT 1`;
       hasNewColumns = true;
-    } catch (error) {
+    } catch {
       hasNewColumns = false;
     }
 
@@ -138,10 +141,11 @@ export async function GET() {
       migrationComplete: !hasPrefPayment && hasNewColumns
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ 
       error: 'Failed to check migration status', 
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 });
   }
 }

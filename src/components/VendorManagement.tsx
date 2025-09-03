@@ -244,15 +244,7 @@ export default function VendorManagement({
     }
   };
 
-  const getPaymentIcon = (method: string) => {
-    switch(method) {
-      case 'VENMO': return '💜';
-      case 'CASHAPP': return '💚';
-      case 'STRIPE': return '💳';
-      case 'ZELLE': return '⚡';
-      default: return '💳';
-    }
-  };
+
 
   const getVendorPaymentMethods = (vendor: Vendor) => {
     const methods = [];
