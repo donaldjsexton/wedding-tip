@@ -52,12 +52,16 @@ model Vendor {
   role              VendorRole
   status            VendorStatus  @default(PENDING)
   
-  // Payment Information
+  // Payment Information - Vendors can enable multiple payment methods
   stripeAccountId   String?
   venmoHandle       String?
   cashAppHandle     String?
   zelleContact      String?       // Phone number or email for Zelle
-  preferredPayment  PaymentMethod @default(STRIPE)
+  // Multiple payment methods enabled
+  acceptsStripe     Boolean       @default(true)
+  acceptsVenmo      Boolean       @default(false) 
+  acceptsCashApp    Boolean       @default(false)
+  acceptsZelle      Boolean       @default(false)
   
   // Profile Management
   isProfileComplete Boolean       @default(false)

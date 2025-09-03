@@ -15,7 +15,11 @@ interface Vendor {
   bio?: string;
   website?: string;
   serviceArea?: string;
-  preferredPayment: string;
+  acceptsStripe?: boolean;
+  acceptsVenmo?: boolean;
+  acceptsCashApp?: boolean;
+  acceptsZelle?: boolean;
+  stripeAccountId?: string;
   venmoHandle?: string;
   cashAppHandle?: string;
   zelleContact?: string;
@@ -44,10 +48,10 @@ const VENDOR_ROLES = [
 ];
 
 const PAYMENT_METHODS = [
-  { value: 'STRIPE', label: 'Credit/Debit Card', icon: '💳' },
-  { value: 'VENMO', label: 'Venmo', icon: '💜' },
-  { value: 'CASHAPP', label: 'Cash App', icon: '💚' },
-  { value: 'ZELLE', label: 'Zelle', icon: '⚡' },
+  { key: 'acceptsStripe', label: 'Credit/Debit Card (Stripe)', icon: '💳', detailField: 'stripeAccountId', detailLabel: 'Stripe Account ID' },
+  { key: 'acceptsVenmo', label: 'Venmo', icon: '💜', detailField: 'venmoHandle', detailLabel: 'Venmo Handle' },
+  { key: 'acceptsCashApp', label: 'Cash App', icon: '💚', detailField: 'cashAppHandle', detailLabel: 'Cash App Handle' },
+  { key: 'acceptsZelle', label: 'Zelle', icon: '⚡', detailField: 'zelleContact', detailLabel: 'Zelle Contact (Phone/Email)' },
 ];
 
 export default function VendorManagementPage() {
@@ -71,7 +75,11 @@ export default function VendorManagementPage() {
     bio: '',
     website: '',
     serviceArea: '',
-    preferredPayment: 'STRIPE',
+    acceptsStripe: true,
+    acceptsVenmo: false,
+    acceptsCashApp: false,
+    acceptsZelle: false,
+    stripeAccountId: '',
     venmoHandle: '',
     cashAppHandle: '',
     zelleContact: ''
@@ -156,7 +164,11 @@ export default function VendorManagementPage() {
       bio: vendor.bio || '',
       website: vendor.website || '',
       serviceArea: vendor.serviceArea || '',
-      preferredPayment: vendor.preferredPayment,
+      acceptsStripe: vendor.acceptsStripe ?? true,
+      acceptsVenmo: vendor.acceptsVenmo ?? false,
+      acceptsCashApp: vendor.acceptsCashApp ?? false,
+      acceptsZelle: vendor.acceptsZelle ?? false,
+      stripeAccountId: vendor.stripeAccountId || '',
       venmoHandle: vendor.venmoHandle || '',
       cashAppHandle: vendor.cashAppHandle || '',
       zelleContact: vendor.zelleContact || ''
@@ -196,7 +208,11 @@ export default function VendorManagementPage() {
       bio: '',
       website: '',
       serviceArea: '',
-      preferredPayment: 'STRIPE',
+      acceptsStripe: true,
+      acceptsVenmo: false,
+      acceptsCashApp: false,
+      acceptsZelle: false,
+      stripeAccountId: '',
       venmoHandle: '',
       cashAppHandle: '',
       zelleContact: ''
@@ -576,70 +592,52 @@ export default function VendorManagementPage() {
               </div>
 
               <div className="border-t pt-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Methods</h3>
+                <p className="text-sm text-gray-600 mb-4">Select all payment methods this vendor accepts</p>
                 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Preferred Payment Method
-                    </label>
-                    <select
-                      value={formData.preferredPayment}
-                      onChange={(e) => setFormData(prev => ({ ...prev, preferredPayment: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      {PAYMENT_METHODS.map(method => (
-                        <option key={method.value} value={method.value}>
+                <div className="space-y-4">
+                  {PAYMENT_METHODS.map(method => (
+                    <div key={method.key} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center mb-3">
+                        <input
+                          type="checkbox"
+                          id={method.key}
+                          checked={formData[method.key as keyof typeof formData] as boolean}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            [method.key]: e.target.checked 
+                          }))}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor={method.key} className="ml-3 text-sm font-medium text-gray-700">
                           {method.icon} {method.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {formData.preferredPayment === 'VENMO' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Venmo Handle
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.venmoHandle}
-                        onChange={(e) => setFormData(prev => ({ ...prev, venmoHandle: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="@username"
-                      />
+                        </label>
+                      </div>
+                      
+                      {formData[method.key as keyof typeof formData] && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {method.detailLabel}
+                          </label>
+                          <input
+                            type="text"
+                            value={formData[method.detailField as keyof typeof formData] as string}
+                            onChange={(e) => setFormData(prev => ({ 
+                              ...prev, 
+                              [method.detailField]: e.target.value 
+                            }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder={
+                              method.key === 'acceptsStripe' ? 'Optional: Stripe Account ID' :
+                              method.key === 'acceptsVenmo' ? '@username' :
+                              method.key === 'acceptsCashApp' ? '$username' :
+                              'Phone number or email'
+                            }
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  {formData.preferredPayment === 'CASHAPP' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Cash App Handle
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.cashAppHandle}
-                        onChange={(e) => setFormData(prev => ({ ...prev, cashAppHandle: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="$username"
-                      />
-                    </div>
-                  )}
-
-                  {formData.preferredPayment === 'ZELLE' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Zelle Contact (Phone or Email)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.zelleContact}
-                        onChange={(e) => setFormData(prev => ({ ...prev, zelleContact: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="Phone or email"
-                      />
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
 

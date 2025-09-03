@@ -12,37 +12,50 @@ export async function POST(request: NextRequest) {
       bio,
       website,
       serviceArea,
-      preferredPayment,
+      acceptsStripe,
+      acceptsVenmo,
+      acceptsCashApp,
+      acceptsZelle,
+      stripeAccountId,
       venmoHandle,
       cashAppHandle,
       zelleContact
     } = body;
 
-    if (!invitationToken || !name || !email || !phone || !preferredPayment) {
+    if (!invitationToken || !name || !email || !phone) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
+    // Validate that at least one payment method is enabled
+    const hasPaymentMethod = acceptsStripe || acceptsVenmo || acceptsCashApp || acceptsZelle;
+    if (!hasPaymentMethod) {
+      return NextResponse.json(
+        { error: 'At least one payment method must be enabled' },
+        { status: 400 }
+      );
+    }
+
     // Validate payment method specific fields
-    if (preferredPayment === 'VENMO' && !venmoHandle) {
+    if (acceptsVenmo && !venmoHandle) {
       return NextResponse.json(
-        { error: 'Venmo handle is required' },
+        { error: 'Venmo handle is required when Venmo is enabled' },
         { status: 400 }
       );
     }
 
-    if (preferredPayment === 'CASHAPP' && !cashAppHandle) {
+    if (acceptsCashApp && !cashAppHandle) {
       return NextResponse.json(
-        { error: 'Cash App handle is required' },
+        { error: 'Cash App handle is required when Cash App is enabled' },
         { status: 400 }
       );
     }
 
-    if (preferredPayment === 'ZELLE' && !zelleContact) {
+    if (acceptsZelle && !zelleContact) {
       return NextResponse.json(
-        { error: 'Zelle contact is required' },
+        { error: 'Zelle contact information is required when Zelle is enabled' },
         { status: 400 }
       );
     }
@@ -96,7 +109,13 @@ export async function POST(request: NextRequest) {
             bio,
             website,
             serviceArea,
-            preferredPayment: preferredPayment as 'STRIPE' | 'VENMO' | 'CASHAPP' | 'ZELLE',
+            // Payment method enablement
+            acceptsStripe: acceptsStripe ?? true,
+            acceptsVenmo: acceptsVenmo ?? false,
+            acceptsCashApp: acceptsCashApp ?? false,
+            acceptsZelle: acceptsZelle ?? false,
+            // Payment method details
+            stripeAccountId,
             venmoHandle,
             cashAppHandle,
             zelleContact,
@@ -116,7 +135,13 @@ export async function POST(request: NextRequest) {
             bio,
             website,
             serviceArea,
-            preferredPayment: preferredPayment as 'STRIPE' | 'VENMO' | 'CASHAPP' | 'ZELLE',
+            // Payment method enablement
+            acceptsStripe: acceptsStripe ?? true,
+            acceptsVenmo: acceptsVenmo ?? false,
+            acceptsCashApp: acceptsCashApp ?? false,
+            acceptsZelle: acceptsZelle ?? false,
+            // Payment method details
+            stripeAccountId,
             venmoHandle,
             cashAppHandle,
             zelleContact,

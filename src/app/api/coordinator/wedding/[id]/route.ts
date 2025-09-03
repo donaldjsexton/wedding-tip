@@ -40,7 +40,10 @@ export async function GET(
                 email: true,
                 phone: true,
                 role: true,
-                preferredPayment: true,
+                acceptsStripe: true,
+                acceptsVenmo: true,
+                acceptsCashApp: true,
+                acceptsZelle: true,
                 venmoHandle: true,
                 cashAppHandle: true
               }
@@ -161,7 +164,10 @@ export async function PUT(
                 email: true,
                 phone: true,
                 role: true,
-                preferredPayment: true,
+                acceptsStripe: true,
+                acceptsVenmo: true,
+                acceptsCashApp: true,
+                acceptsZelle: true,
                 venmoHandle: true,
                 cashAppHandle: true
               }
