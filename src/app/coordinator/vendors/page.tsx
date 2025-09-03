@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Search, Users, Mail, Phone, Globe, Edit, Trash2, Eye, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Users, Mail, Phone, Globe, Edit, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface Vendor {
@@ -77,6 +77,21 @@ export default function VendorManagementPage() {
     zelleContact: ''
   });
 
+  const fetchVendors = useCallback(async (coordinatorId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/coordinator/vendors?coordinatorId=${coordinatorId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setVendors(data.vendors || []);
+      }
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Check if coordinator is logged in
     const coordinatorData = localStorage.getItem('coordinator');
@@ -93,22 +108,7 @@ export default function VendorManagementPage() {
       console.error('Invalid coordinator data:', error);
       router.push('/coordinator/login');
     }
-  }, [router]);
-
-  const fetchVendors = useCallback(async (coordinatorId: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/coordinator/vendors?coordinatorId=${coordinatorId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setVendors(data.vendors || []);
-      }
-    } catch (error) {
-      console.error('Error fetching vendors:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [router, fetchVendors]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

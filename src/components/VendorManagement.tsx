@@ -10,6 +10,7 @@ interface Vendor {
   email?: string;
   phone?: string;
   role: string;
+  status: string;
   bio?: string;
   website?: string;
   serviceArea?: string;
@@ -19,21 +20,32 @@ interface Vendor {
   zelleContact?: string;
   weddingsWorked: number;
   weddingsWithCoordinator: number;
+  totalWeddings: number;
+  completedTips: number;
+}
+
+interface WeddingVendor {
+  id: string;
+  vendor: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    role: string;
+    preferredPayment: string;
+    venmoHandle?: string;
+    cashAppHandle?: string;
+  };
+  serviceHours?: number;
+  serviceRate?: number;
+  customTipAmount?: number;
+  notes?: string;
 }
 
 interface VendorManagementProps {
   weddingId: string;
   coordinatorId: string;
-  currentVendors: Array<{
-    id: string;
-    vendor: {
-      id: string;
-      name: string;
-      role: string;
-      email?: string;
-      preferredPayment: string;
-    };
-  }>;
+  currentVendors: WeddingVendor[];
   onVendorAdded: () => void;
 }
 
@@ -43,7 +55,7 @@ const VENDOR_ROLES = [
   { value: 'COORDINATOR', label: 'Coordinator', emoji: '📋' },
   { value: 'SETUP_ATTENDANT', label: 'Setup Team', emoji: '🔧' },
   { value: 'PHOTOGRAPHER', label: 'Photographer', emoji: '📸' },
-] as const;
+];
 
 export default function VendorManagement({ 
   weddingId, 
@@ -55,7 +67,7 @@ export default function VendorManagement({
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [searchResults, setSearchResults] = useState<Vendor[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [showInviteForm, setShowInviteForm] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'search' | 'roster' | 'invite'>('roster');
   const [rosterVendors, setRosterVendors] = useState<Vendor[]>([]);
   const [rosterLoading, setRosterLoading] = useState(false);
@@ -65,6 +77,7 @@ export default function VendorManagement({
     role: 'OFFICIANT',
     message: ''
   });
+
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteResult, setInviteResult] = useState<{
     type: string;
@@ -147,8 +160,8 @@ export default function VendorManagement({
 
       if (response.ok) {
         onVendorAdded();
-        setSearchQuery('');
-        setSearchResults([]);
+        // Refresh roster to remove newly added vendor
+        loadRosterVendors();
       }
     } catch (error) {
       console.error('Error adding vendor:', error);
@@ -158,12 +171,6 @@ export default function VendorManagement({
   const sendInvitation = async () => {
     if (!inviteForm.email || !inviteForm.vendorName) return;
     
-    console.log('Sending invitation with data:', {
-      ...inviteForm,
-      weddingId,
-      coordinatorId
-    });
-
     setInviteLoading(true);
     try {
       const response = await fetch('/api/coordinator/vendors/invite', {
@@ -178,28 +185,22 @@ export default function VendorManagement({
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Invitation response:', data);
         
         if (data.type === 'existing_vendor_added') {
-          // Existing vendor was added
           onVendorAdded();
           setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
-          setShowInviteForm(false);
         } else if (data.type === 'invitation_created_email_skipped') {
-          // Email was skipped, show registration URL to coordinator
           setInviteResult({
             type: data.type,
             message: data.message,
             registrationUrl: data.registrationUrl,
             actionRequired: data.actionRequired
           });
-          // Reset form but keep modal open to show result
           setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
         } else {
-          // Email was sent successfully
           setInviteResult({
             type: data.type,
-            message: data.message || 'Vendor invitation sent successfully!'
+            message: data.message
           });
           setInviteForm({ email: '', vendorName: '', role: 'OFFICIANT', message: '' });
         }
@@ -210,6 +211,7 @@ export default function VendorManagement({
       }
     } catch (error) {
       console.error('Error sending invitation:', error);
+      alert('An error occurred while sending the invitation');
     } finally {
       setInviteLoading(false);
     }
@@ -289,7 +291,7 @@ export default function VendorManagement({
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Vendor Roster</h3>
               <p className="text-sm text-gray-600">
-                Add vendors from your roster that you've worked with before. 
+                Add vendors from your roster that you&apos;ve worked with before. 
                 <Link href="/coordinator/vendors" className="text-purple-600 hover:underline ml-1">
                   Manage full roster →
                 </Link>
@@ -354,109 +356,109 @@ export default function VendorManagement({
               </p>
             </div>
         
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Search by name, email, or location..."
-            />
-          </div>
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
-            {VENDOR_ROLES.map(role => (
-              <option key={role.value} value={role.value}>
-                {'emoji' in role && role.emoji ? `${role.emoji} ` : ''}{role.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Search by name, email, or location..."
+                />
+              </div>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {VENDOR_ROLES.map(role => (
+                  <option key={role.value} value={role.value}>
+                    {'emoji' in role && role.emoji ? `${role.emoji} ` : ''}{role.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Search Results */}
-        {searchLoading && (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
-          </div>
-        )}
+            {/* Search Results */}
+            {searchLoading && (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
+              </div>
+            )}
 
-        {searchResults.length > 0 && (
-          <div className="space-y-3">
-            {searchResults.map(vendor => (
-              <div key={vendor.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{getRoleEmoji(vendor.role)}</span>
-                  <div>
+            {searchResults.length > 0 && (
+              <div className="space-y-3">
+                {searchResults.map(vendor => (
+                  <div key={vendor.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{getRoleEmoji(vendor.role)}</span>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-medium text-gray-800">{vendor.name}</h4>
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            {vendor.role.replace('_', ' ').toLowerCase()}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 space-x-4">
+                          {vendor.email && (
+                            <span className="flex items-center">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {vendor.email}
+                            </span>
+                          )}
+                          {vendor.serviceArea && (
+                            <span>📍 {vendor.serviceArea}</span>
+                          )}
+                          <span className="flex items-center">
+                            {getPaymentIcon(vendor.preferredPayment)}
+                            <span className="ml-1">{vendor.preferredPayment}</span>
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {vendor.weddingsWorked} weddings • {vendor.weddingsWithCoordinator} with you
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-medium text-gray-800">{vendor.name}</h4>
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                        {vendor.role.replace('_', ' ').toLowerCase()}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
-                      {vendor.email && (
-                        <span className="flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {vendor.email}
-                        </span>
+                      {vendor.website && (
+                        <a 
+                          href={vendor.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
                       )}
-                      {vendor.serviceArea && (
-                        <span>📍 {vendor.serviceArea}</span>
+                      
+                      {isVendorAdded(vendor.id) ? (
+                        <div className="flex items-center text-green-600 text-sm">
+                          <Check className="h-4 w-4 mr-1" />
+                          Added
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => addExistingVendor(vendor.id)}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Add to Wedding
+                        </button>
                       )}
-                      <span className="flex items-center">
-                        {getPaymentIcon(vendor.preferredPayment)}
-                        <span className="ml-1">{vendor.preferredPayment}</span>
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {vendor.weddingsWorked} weddings • {vendor.weddingsWithCoordinator} with you
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {vendor.website && (
-                    <a 
-                      href={vendor.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {isVendorAdded(vendor.id) ? (
-                    <div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm">
-                      <Check className="h-4 w-4 mr-1" />
-                      Added
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => addExistingVendor(vendor.id)}
-                      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      Add to Wedding
-                    </button>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {searchQuery && !searchLoading && searchResults.length === 0 && (
-          <div className="text-center py-6 text-gray-500">
-            <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p>No vendors found matching &quot;{searchQuery}&quot;</p>
-            <p className="text-sm">Try a different search term or invite a new vendor.</p>
-          </div>
-        )}
+            {searchQuery && !searchLoading && searchResults.length === 0 && (
+              <div className="text-center py-6 text-gray-500">
+                <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <p>No vendors found matching &quot;{searchQuery}&quot;</p>
+                <p className="text-sm">Try a different search term or invite a new vendor.</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -471,150 +473,147 @@ export default function VendorManagement({
             </div>
 
             <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Vendor Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={inviteForm.vendorName}
-                  onChange={(e) => setInviteForm(prev => ({ ...prev, vendorName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="John Smith Photography"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vendor Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={inviteForm.vendorName}
+                    onChange={(e) => setInviteForm(prev => ({ ...prev, vendorName: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="John Smith Photography"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={inviteForm.email}
+                    onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="vendor@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Role *
+                  </label>
+                  <select
+                    value={inviteForm.role}
+                    onChange={(e) => setInviteForm(prev => ({ ...prev, role: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {VENDOR_ROLES.filter(role => role.value !== 'ALL').map(role => (
+                      <option key={role.value} value={role.value}>
+                        {role.emoji} {role.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Personal Message (Optional)
+                  </label>
+                  <textarea
+                    value={inviteForm.message}
+                    onChange={(e) => setInviteForm(prev => ({ ...prev, message: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Hi! I&apos;d love to work with you on an upcoming wedding..."
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={inviteForm.email}
-                  onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="vendor@example.com"
-                />
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-700">
+                  <strong>📧 What happens next:</strong> The vendor will receive an email invitation with a link to register their profile and payment information. Once they complete registration, they&apos;ll automatically be added to this wedding.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role *
-                </label>
-                <select
-                  value={inviteForm.role}
-                  onChange={(e) => setInviteForm(prev => ({ ...prev, role: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {VENDOR_ROLES.filter(role => role.value !== 'ALL').map(role => (
-                    <option key={role.value} value={role.value}>
-                      {role.emoji} {role.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Personal Message (optional)
-                </label>
-                <textarea
-                  value={inviteForm.message}
-                  onChange={(e) => setInviteForm(prev => ({ ...prev, message: e.target.value }))}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Hi! I'd love to have you as part of this special wedding..."
-                />
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-700">
-                <strong>📧 What happens next:</strong> The vendor will receive an email invitation with a link to register their profile and payment information. Once they complete registration, they&apos;ll automatically be added to this wedding.
-              </p>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={sendInvitation}
-                disabled={!inviteForm.email || !inviteForm.vendorName || inviteLoading}
-                className="inline-flex items-center bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-              >
-                {inviteLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Invitation
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Invitation Result Modal */}
-        {inviteResult && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  {inviteResult.type === 'invitation_created_email_skipped' ? '📧 Email Configuration Required' : '✅ Invitation Sent'}
-                </h3>
-                <p className="text-gray-600 mb-4">{inviteResult.message}</p>
-                
-                {inviteResult.registrationUrl && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-yellow-800 font-medium mb-2">
-                      ⚠️ {inviteResult.actionRequired}
-                    </p>
-                    <p className="text-sm text-gray-700 mb-3">
-                      Registration Link:
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={inviteResult.registrationUrl}
-                        readOnly
-                        className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-sm font-mono"
-                      />
-                      <button
-                        onClick={() => copyRegistrationUrl(inviteResult.registrationUrl!)}
-                        className="px-3 py-2 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
-                        title="Copy to clipboard"
-                      >
-                        📋
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Copy this link and send it to the vendor via email, text, or your preferred communication method.
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end">
                 <button
-                  onClick={() => {
-                    setInviteResult(null);
-                    setShowInviteForm(false);
-                  }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                  onClick={sendInvitation}
+                  disabled={!inviteForm.email || !inviteForm.vendorName || inviteLoading}
+                  className="inline-flex items-center bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Close
+                  {inviteLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Invitation
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Invitation Result Modal */}
+      {inviteResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {inviteResult.type === 'invitation_created_email_skipped' ? '📧 Email Configuration Required' : '✅ Invitation Sent'}
+              </h3>
+              <p className="text-gray-600 mb-4">{inviteResult.message}</p>
+              
+              {inviteResult.registrationUrl && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-yellow-800 font-medium mb-2">
+                    ⚠️ {inviteResult.actionRequired}
+                  </p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    Registration Link:
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={inviteResult.registrationUrl}
+                      readOnly
+                      className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-sm font-mono"
+                    />
+                    <button
+                      onClick={() => inviteResult.registrationUrl && copyRegistrationUrl(inviteResult.registrationUrl)}
+                      className="px-3 py-2 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Copy this link and send it to the vendor via email, text, or your preferred communication method.
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setInviteResult(null)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
