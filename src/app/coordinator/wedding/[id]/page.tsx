@@ -137,17 +137,16 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
     return emojiMap[role] || '💼';
   };
 
-  const getPaymentIcon = (method: string) => {
-    switch(method) {
-      case 'VENMO': return '💜';
-      case 'CASHAPP': return '💚';
-      case 'STRIPE': return '💳';
-      case 'ZELLE': return '⚡';
-      default: return '💳';
-    }
-  };
-
-  const getVendorPaymentMethods = (vendor: any) => {
+  const getVendorPaymentMethods = (vendor: {
+    acceptsStripe?: boolean;
+    acceptsVenmo?: boolean;
+    acceptsCashApp?: boolean;
+    acceptsZelle?: boolean;
+    stripeAccountId?: string;
+    venmoHandle?: string;
+    cashAppHandle?: string;
+    zelleContact?: string;
+  }) => {
     const methods = [];
     if (vendor.acceptsStripe) {
       methods.push({ icon: '💳', name: 'Credit Card' });
