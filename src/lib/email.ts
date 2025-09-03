@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import VendorInvitationEmail from '@/components/emails/VendorInvitationEmail';
 
 // Initialize Resend with a fallback to prevent build errors
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
@@ -36,17 +35,6 @@ export async function sendVendorInvitation({
       from: 'TipWedding <onboarding@resend.dev>', // Using Resend's default domain for testing
       to: [vendorEmail],
       subject: `Wedding Vendor Invitation - ${weddingDetails.coupleName}`,
-      react: VendorInvitationEmail({
-        vendorName,
-        coordinatorName,
-        coordinatorCompany,
-        coordinatorEmail,
-        weddingDetails,
-        role,
-        invitationUrl,
-        message
-      }),
-      // Fallback HTML for email clients that don't support React
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
