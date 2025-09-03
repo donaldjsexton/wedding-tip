@@ -14,7 +14,11 @@ interface Vendor {
   bio?: string;
   website?: string;
   serviceArea?: string;
-  preferredPayment: string;
+  acceptsStripe?: boolean;
+  acceptsVenmo?: boolean;
+  acceptsCashApp?: boolean;
+  acceptsZelle?: boolean;
+  stripeAccountId?: string;
   venmoHandle?: string;
   cashAppHandle?: string;
   zelleContact?: string;
@@ -32,9 +36,14 @@ interface WeddingVendor {
     email?: string;
     phone?: string;
     role: string;
-    preferredPayment: string;
+    acceptsStripe?: boolean;
+    acceptsVenmo?: boolean;
+    acceptsCashApp?: boolean;
+    acceptsZelle?: boolean;
+    stripeAccountId?: string;
     venmoHandle?: string;
     cashAppHandle?: string;
+    zelleContact?: string;
   };
   serviceHours?: number;
   serviceRate?: number;
@@ -245,6 +254,23 @@ export default function VendorManagement({
     }
   };
 
+  const getVendorPaymentMethods = (vendor: Vendor) => {
+    const methods = [];
+    if (vendor.acceptsStripe) {
+      methods.push({ icon: '💳', name: 'Credit Card' });
+    }
+    if (vendor.acceptsVenmo && vendor.venmoHandle) {
+      methods.push({ icon: '💜', name: vendor.venmoHandle });
+    }
+    if (vendor.acceptsCashApp && vendor.cashAppHandle) {
+      methods.push({ icon: '💚', name: vendor.cashAppHandle });
+    }
+    if (vendor.acceptsZelle && vendor.zelleContact) {
+      methods.push({ icon: '⚡', name: vendor.zelleContact });
+    }
+    return methods;
+  };
+
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
@@ -410,10 +436,17 @@ export default function VendorManagement({
                           {vendor.serviceArea && (
                             <span>📍 {vendor.serviceArea}</span>
                           )}
-                          <span className="flex items-center">
-                            {getPaymentIcon(vendor.preferredPayment)}
-                            <span className="ml-1">{vendor.preferredPayment}</span>
-                          </span>
+                          <div className="flex items-center flex-wrap gap-2">
+                            {getVendorPaymentMethods(vendor).map((method, index) => (
+                              <span key={index} className="flex items-center">
+                                <span className="mr-1">{method.icon}</span>
+                                <span className="text-xs">{method.name}</span>
+                              </span>
+                            ))}
+                            {getVendorPaymentMethods(vendor).length === 0 && (
+                              <span className="text-xs text-gray-400">No payment methods</span>
+                            )}
+                          </div>
                         </div>
                         <div className="text-xs text-gray-400 mt-1">
                           {vendor.weddingsWorked} weddings • {vendor.weddingsWithCoordinator} with you
