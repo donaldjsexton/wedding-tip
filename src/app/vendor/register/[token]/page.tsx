@@ -488,95 +488,60 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Preferred Payment Method *
+                    Payment Methods * (Select all that you accept)
                   </label>
-                  <div className="grid md:grid-cols-2 gap-3">
+                  {errors.payment && <p className="text-red-500 text-xs mb-2">{errors.payment}</p>}
+                  
+                  <div className="space-y-4">
                     {PAYMENT_METHODS.map(method => (
-                      <label
-                        key={method.value}
-                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                          formData.preferredPayment === method.value 
-                            ? 'border-purple-500 bg-purple-50' 
-                            : 'border-gray-200 hover:border-purple-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="preferredPayment"
-                          value={method.value}
-                          checked={formData.preferredPayment === method.value}
-                          onChange={(e) => setFormData(prev => ({ ...prev, preferredPayment: e.target.value as 'STRIPE' | 'VENMO' | 'CASHAPP' | 'ZELLE' }))}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center">
-                          <span className="text-2xl mr-3">{method.icon}</span>
-                          <div>
-                            <div className="font-medium text-gray-800">{method.label}</div>
-                            <div className="text-xs text-gray-500">{method.description}</div>
-                          </div>
+                      <div key={method.key} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center mb-3">
+                          <input
+                            type="checkbox"
+                            id={method.key}
+                            checked={formData[method.key as keyof VendorFormData] as boolean}
+                            onChange={(e) => setFormData(prev => ({ 
+                              ...prev, 
+                              [method.key]: e.target.checked 
+                            }))}
+                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor={method.key} className="ml-3 flex items-center cursor-pointer">
+                            <span className="text-2xl mr-3">{method.icon}</span>
+                            <div>
+                              <div className="font-medium text-gray-800">{method.label}</div>
+                              <div className="text-xs text-gray-500">{method.description}</div>
+                            </div>
+                          </label>
                         </div>
-                        {formData.preferredPayment === method.value && (
-                          <CheckCircle className="absolute top-2 right-2 h-5 w-5 text-purple-500" />
+                        
+                        {formData[method.key as keyof VendorFormData] && (
+                          <div className="mt-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {method.detailLabel} {method.key !== 'acceptsStripe' ? '*' : ''}
+                            </label>
+                            <input
+                              type="text"
+                              required={method.key !== 'acceptsStripe'}
+                              value={formData[method.detailField as keyof VendorFormData] as string}
+                              onChange={(e) => setFormData(prev => ({ 
+                                ...prev, 
+                                [method.detailField]: e.target.value 
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              placeholder={method.placeholder}
+                            />
+                            {errors[method.detailField] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[method.detailField]}</p>
+                            )}
+                          </div>
                         )}
-                      </label>
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Payment-specific fields */}
-                {formData.preferredPayment === 'VENMO' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Venmo Handle *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.venmoHandle}
-                      onChange={(e) => setFormData(prev => ({ ...prev, venmoHandle: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="@username"
-                    />
-                    {errors.venmoHandle && <p className="text-red-500 text-xs mt-1">{errors.venmoHandle}</p>}
-                  </div>
-                )}
 
-                {formData.preferredPayment === 'CASHAPP' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cash App Handle *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.cashAppHandle}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cashAppHandle: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="$username"
-                    />
-                    {errors.cashAppHandle && <p className="text-red-500 text-xs mt-1">{errors.cashAppHandle}</p>}
-                  </div>
-                )}
-
-                {formData.preferredPayment === 'ZELLE' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Zelle Contact *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.zelleContact}
-                      onChange={(e) => setFormData(prev => ({ ...prev, zelleContact: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="Phone number or email address"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Enter the phone number or email address linked to your Zelle account
-                    </p>
-                    {errors.zelleContact && <p className="text-red-500 text-xs mt-1">{errors.zelleContact}</p>}
-                  </div>
-                )}
               </div>
             </div>
 

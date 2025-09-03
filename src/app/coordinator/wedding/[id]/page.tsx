@@ -14,9 +14,14 @@ interface Vendor {
     email?: string;
     phone?: string;
     role: string;
-    preferredPayment: string;
+    acceptsStripe?: boolean;
+    acceptsVenmo?: boolean;
+    acceptsCashApp?: boolean;
+    acceptsZelle?: boolean;
+    stripeAccountId?: string;
     venmoHandle?: string;
     cashAppHandle?: string;
+    zelleContact?: string;
   };
   serviceHours?: number;
   serviceRate?: number;
@@ -137,8 +142,26 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
       case 'VENMO': return '💜';
       case 'CASHAPP': return '💚';
       case 'STRIPE': return '💳';
+      case 'ZELLE': return '⚡';
       default: return '💳';
     }
+  };
+
+  const getVendorPaymentMethods = (vendor: any) => {
+    const methods = [];
+    if (vendor.acceptsStripe) {
+      methods.push({ icon: '💳', name: 'Credit Card' });
+    }
+    if (vendor.acceptsVenmo && vendor.venmoHandle) {
+      methods.push({ icon: '💜', name: vendor.venmoHandle });
+    }
+    if (vendor.acceptsCashApp && vendor.cashAppHandle) {
+      methods.push({ icon: '💚', name: vendor.cashAppHandle });
+    }
+    if (vendor.acceptsZelle && vendor.zelleContact) {
+      methods.push({ icon: '⚡', name: vendor.zelleContact });
+    }
+    return methods;
   };
 
   const getStatusColor = (status: string) => {
@@ -354,15 +377,18 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                       )}
 
                       <div>
-                        <span className="text-gray-500">Payment:</span>
-                        <p className="text-gray-800 flex items-center">
-                          {getPaymentIcon(wv.vendor.preferredPayment)}
-                          <span className="ml-1">
-                            {wv.vendor.preferredPayment === 'VENMO' && wv.vendor.venmoHandle}
-                            {wv.vendor.preferredPayment === 'CASHAPP' && wv.vendor.cashAppHandle}
-                            {wv.vendor.preferredPayment === 'STRIPE' && 'Credit Card'}
-                          </span>
-                        </p>
+                        <span className="text-gray-500">Payment Methods:</span>
+                        <div className="text-gray-800">
+                          {getVendorPaymentMethods(wv.vendor).map((method, index) => (
+                            <span key={index} className="inline-flex items-center mr-4 mb-1">
+                              <span className="mr-1">{method.icon}</span>
+                              <span>{method.name}</span>
+                            </span>
+                          ))}
+                          {getVendorPaymentMethods(wv.vendor).length === 0 && (
+                            <span className="text-gray-500">No payment methods configured</span>
+                          )}
+                        </div>
                       </div>
 
                       {wv.serviceHours && (
