@@ -14,16 +14,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get vendors that this coordinator has worked with
+    // Get vendors that this coordinator has access to (either created by them or worked with them)
     const vendors = await prisma.vendor.findMany({
       where: {
-        weddingVendors: {
-          some: {
-            wedding: {
-              coordinatorId: coordinatorId
+        OR: [
+          // Vendors that have worked on weddings with this coordinator
+          {
+            weddingVendors: {
+              some: {
+                wedding: {
+                  coordinatorId: coordinatorId
+                }
+              }
             }
+          },
+          // Vendors directly associated with this coordinator
+          {
+            invitedBy: coordinatorId
           }
-        }
+        ]
       },
       include: {
         weddingVendors: {
@@ -125,7 +134,9 @@ export async function POST(request: NextRequest) {
         venmoHandle: venmoHandle || null,
         cashAppHandle: cashAppHandle || null,
         zelleContact: zelleContact || null,
+        status: 'ACTIVE', // Manually added vendors are immediately active
         isProfileComplete: true,
+        invitedBy: coordinatorId, // Associate vendor with this coordinator
         registeredAt: new Date()
       },
       include: {
