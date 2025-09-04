@@ -347,7 +347,7 @@ export default function VendorManagementPage() {
         {/* Vendors Grid */}
         {filteredVendors.length === 0 ? (
           <div className="text-center py-16">
-            <Users className="h-24 w-24 text-gray-300 mx-auto mb-6" />
+            <Users className="h-24 w-24 text-gray-600 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {searchQuery || statusFilter !== 'ALL' || roleFilter !== 'ALL' ? 
                 'No vendors match your filters' : 'No Vendors Yet'}

@@ -455,7 +455,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
 
               {wedding.tips.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">
-                  <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <Clock className="h-8 w-8 mx-auto mb-2 text-gray-600" />
                   <p className="text-sm">No tips yet</p>
                   <p className="text-xs">Tips will appear here once couples start tipping</p>
                 </div>

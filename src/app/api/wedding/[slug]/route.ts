@@ -98,7 +98,16 @@ export async function OPTIONS() {
 }
 
 // Helper function to determine preferred payment method based on vendor's enabled methods
-function determinePreferredPayment(vendor: any): string {
+function determinePreferredPayment(vendor: {
+  acceptsStripe: boolean;
+  stripeAccountId: string | null;
+  acceptsVenmo: boolean;
+  venmoHandle: string | null;
+  acceptsCashApp: boolean;
+  cashAppHandle: string | null;
+  acceptsZelle: boolean;
+  zelleContact: string | null;
+}): string {
   // Priority order: STRIPE (most common), VENMO, CASHAPP, ZELLE
   if (vendor.acceptsStripe && vendor.stripeAccountId) return 'STRIPE';
   if (vendor.acceptsVenmo && vendor.venmoHandle) return 'VENMO';

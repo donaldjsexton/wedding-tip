@@ -322,7 +322,7 @@ export default function VendorManagement({
               </div>
             ) : rosterVendors.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <Users className="h-12 w-12 text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-500 mb-2">No available vendors in your roster.</p>
                 <p className="text-sm text-gray-400">
                   <Link href="/coordinator/vendors" className="text-purple-600 hover:underline">
@@ -479,7 +479,7 @@ export default function VendorManagement({
 
             {searchQuery && !searchLoading && searchResults.length === 0 && (
               <div className="text-center py-6 text-gray-500">
-                <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <User className="h-12 w-12 mx-auto mb-3 text-gray-600" />
                 <p>No vendors found matching &quot;{searchQuery}&quot;</p>
                 <p className="text-sm">Try a different search term or invite a new vendor.</p>
               </div>

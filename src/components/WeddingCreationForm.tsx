@@ -249,7 +249,7 @@ export default function WeddingCreationForm({
 
               {formData.vendors.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <Users className="h-12 w-12 mx-auto mb-3 text-gray-600" />
                   <p>No vendors added yet</p>
                   <p className="text-sm">Click &quot;Add Vendor&quot; to get started</p>
                 </div>

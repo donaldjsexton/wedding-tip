@@ -185,7 +185,7 @@ export default function CoordinatorDashboard() {
       <div className="container mx-auto px-4 py-8">
         {weddings.length === 0 ? (
           <div className="text-center py-16">
-            <Calendar className="h-24 w-24 text-gray-300 mx-auto mb-6" />
+            <Calendar className="h-24 w-24 text-gray-600 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               No Weddings Yet
             </h2>
