@@ -36,6 +36,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [tipSliderValue, setTipSliderValue] = useState<number>(0);
 
   useEffect(() => {
     // Handle async params and fetch wedding data
@@ -155,7 +156,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
     setTipAmounts(prev => ({ ...prev, [vendorId]: amount }));
     setCompletedTips(prev => new Set([...prev, vendorId]));
     setShowTipModal(false);
-    setSelectedVendor(null);
+    // Don't clear selectedVendor so user can see the completion status
   };
 
   const totalTipped = Object.values(tipAmounts).reduce((sum, amount) => sum + amount, 0);
@@ -213,98 +214,172 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
 
-        {/* Vendor Cards */}
-        <div className="grid gap-6">
-          {wedding.vendors.map((vendor) => {
-            const recommendations = getTipRecommendations(vendor);
-            const isCompleted = completedTips.has(vendor.id);
-            const tippedAmount = tipAmounts[vendor.id];
+        {/* Vendor Selection and Tipping Interface */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Vendor Selection Panel */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Choose Service to Tip</h3>
+            <div className="space-y-3">
+              {wedding.vendors.map((vendor) => {
+                const isCompleted = completedTips.has(vendor.id);
+                const tippedAmount = tipAmounts[vendor.id];
+                const isSelected = selectedVendor?.id === vendor.id;
 
-            return (
-              <div
-                key={vendor.id}
-                className={`bg-white rounded-xl shadow-lg border-2 transition-all ${
-                  isCompleted 
-                    ? 'border-green-200 bg-green-50' 
-                    : 'border-gray-100 hover:border-pink-200 hover:shadow-xl'
-                }`}
-              >
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="text-3xl">{getRoleEmoji(vendor.role)}</div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-1">
-                          {vendor.name}
-                        </h3>
-                        <p className="text-purple-600 font-medium mb-2">
-                          {getRoleDisplayName(vendor.role)}
-                        </p>
-                        {vendor.serviceHours && (
-                          <p className="text-sm text-gray-800">
-                            Service time: {vendor.serviceHours} hours
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="flex items-center text-green-600">
-                        <CheckCircle className="h-6 w-6 mr-2" />
-                        <span className="font-semibold">${tippedAmount}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {!isCompleted && (
-                    <>
-                      {/* Tip Recommendations */}
-                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                        <h4 className="font-semibold text-gray-800 mb-3">Suggested Tips:</h4>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="text-center">
-                            <div className="bg-white rounded-lg p-3 border">
-                              <p className="text-lg font-bold text-gray-700">${recommendations.low}</p>
-                              <p className="text-xs text-gray-500">Good Service</p>
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="bg-purple-100 rounded-lg p-3 border border-purple-200">
-                              <p className="text-lg font-bold text-purple-700">${recommendations.medium}</p>
-                              <p className="text-xs text-purple-600">Great Service</p>
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="bg-white rounded-lg p-3 border">
-                              <p className="text-lg font-bold text-gray-700">${recommendations.high}</p>
-                              <p className="text-xs text-gray-500">Exceptional</p>
-                            </div>
-                          </div>
+                return (
+                  <div
+                    key={vendor.id}
+                    onClick={() => {
+                      setSelectedVendor(vendor);
+                      const recommendations = getTipRecommendations(vendor);
+                      setTipSliderValue(recommendations.medium);
+                    }}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'border-pink-400 bg-pink-50' 
+                        : isCompleted
+                        ? 'border-green-200 bg-green-50'
+                        : 'border-gray-200 hover:border-pink-200 hover:bg-pink-25'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">{getRoleEmoji(vendor.role)}</div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">{vendor.name}</h4>
+                          <p className="text-sm text-purple-600">{getRoleDisplayName(vendor.role)}</p>
+                          {vendor.serviceHours && (
+                            <p className="text-xs text-gray-600">{vendor.serviceHours} hours</p>
+                          )}
                         </div>
                       </div>
+                      {isCompleted && (
+                        <div className="flex items-center text-green-600">
+                          <CheckCircle className="h-5 w-5 mr-1" />
+                          <span className="font-semibold text-sm">${tippedAmount}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                      {/* Payment Info */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm text-gray-800">
-                          <span className="mr-2">{getPaymentIcon(vendor.preferredPayment)}</span>
-                          <span>
-                            {vendor.preferredPayment === 'VENMO' && vendor.venmoHandle}
-                            {vendor.preferredPayment === 'CASHAPP' && vendor.cashAppHandle}
-                            {vendor.preferredPayment === 'STRIPE' && 'Credit/Debit Card'}
+          {/* Tip Amount Slider Panel */}
+          <div className="lg:col-span-2">
+            {selectedVendor ? (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="mb-6">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="text-3xl">{getRoleEmoji(selectedVendor.role)}</div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">{selectedVendor.name}</h3>
+                      <p className="text-purple-600 font-medium">{getRoleDisplayName(selectedVendor.role)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {!completedTips.has(selectedVendor.id) ? (
+                  <>
+                    {/* Interactive Tip Slider */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-gray-800">Choose Your Tip Amount</h4>
+                        <div className="text-2xl font-bold text-pink-600">${tipSliderValue}</div>
+                      </div>
+                      
+                      {(() => {
+                        const recommendations = getTipRecommendations(selectedVendor);
+                        const minTip = Math.max(5, Math.floor(recommendations.low * 0.5));
+                        const maxTip = recommendations.high * 2;
+                        
+                        return (
+                          <>
+                            <input
+                              type="range"
+                              min={minTip}
+                              max={maxTip}
+                              value={tipSliderValue}
+                              onChange={(e) => setTipSliderValue(parseInt(e.target.value))}
+                              className="w-full h-3 bg-gradient-to-r from-pink-200 via-pink-400 to-pink-600 rounded-lg appearance-none cursor-pointer slider"
+                              style={{
+                                background: `linear-gradient(to right, #fce7f3 0%, #f9a8d4 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 50}%, #ec4899 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb 100%)`
+                              }}
+                            />
+                            <div className="flex justify-between text-sm text-gray-600 mt-2">
+                              <span>${minTip}</span>
+                              <span className="text-center">
+                                {tipSliderValue < recommendations.low && "🙂 Good"}
+                                {tipSliderValue >= recommendations.low && tipSliderValue < recommendations.high && "😊 Great"}
+                                {tipSliderValue >= recommendations.high && "🤩 Amazing"}
+                              </span>
+                              <span>${maxTip}+</span>
+                            </div>
+                            
+                            {/* Reference Points */}
+                            <div className="flex justify-between mt-4 text-xs">
+                              <div className={`text-center ${tipSliderValue === recommendations.low ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                                <div className="w-2 h-2 mx-auto rounded-full bg-gray-300 mb-1"></div>
+                                <p>Good Service</p>
+                                <p>${recommendations.low}</p>
+                              </div>
+                              <div className={`text-center ${tipSliderValue === recommendations.medium ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                                <div className="w-2 h-2 mx-auto rounded-full bg-pink-400 mb-1"></div>
+                                <p>Great Service</p>
+                                <p>${recommendations.medium}</p>
+                              </div>
+                              <div className={`text-center ${tipSliderValue === recommendations.high ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                                <div className="w-2 h-2 mx-auto rounded-full bg-pink-600 mb-1"></div>
+                                <p>Exceptional</p>
+                                <p>${recommendations.high}</p>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Payment Info and Action */}
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-gray-700">Payment Method:</span>
+                        <div className="flex items-center">
+                          <span className="mr-2">{getPaymentIcon(selectedVendor.preferredPayment)}</span>
+                          <span className="text-sm font-medium">
+                            {selectedVendor.preferredPayment === 'VENMO' && selectedVendor.venmoHandle}
+                            {selectedVendor.preferredPayment === 'CASHAPP' && selectedVendor.cashAppHandle}
+                            {selectedVendor.preferredPayment === 'STRIPE' && 'Credit/Debit Card'}
                           </span>
                         </div>
-                        <button
-                          onClick={() => handleTipVendor(vendor)}
-                          className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-                        >
-                          Tip Now
-                        </button>
                       </div>
-                    </>
-                  )}
-                </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedVendor(selectedVendor);
+                        setShowTipModal(true);
+                      }}
+                      className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      Tip ${tipSliderValue} Now
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h4 className="text-xl font-bold text-green-800 mb-2">Tip Completed!</h4>
+                    <p className="text-green-700">You tipped ${tipAmounts[selectedVendor.id]} to {selectedVendor.name}</p>
+                  </div>
+                )}
               </div>
-            );
-          })}
+            ) : (
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <Heart className="h-16 w-16 text-pink-300 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-700 mb-2">Select a Vendor to Tip</h3>
+                <p className="text-gray-500">Choose a service provider from the list on the left to get started with tipping.</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Summary */}
@@ -331,10 +406,10 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
       {showTipModal && selectedVendor && (
         <TipModal
           vendor={selectedVendor}
+          initialAmount={tipSliderValue}
           onComplete={handleTipComplete}
           onClose={() => {
             setShowTipModal(false);
-            setSelectedVendor(null);
           }}
         />
       )}
@@ -345,14 +420,16 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
 // Tip Modal Component
 function TipModal({ 
   vendor, 
+  initialAmount,
   onComplete, 
   onClose 
 }: { 
   vendor: Vendor; 
+  initialAmount: number;
   onComplete: (vendorId: string, amount: number) => void;
   onClose: () => void;
 }) {
-  const [selectedAmount, setSelectedAmount] = useState<number>(0);
+  const [selectedAmount, setSelectedAmount] = useState<number>(initialAmount);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
   
@@ -416,47 +493,39 @@ function TipModal({
             <p className="text-purple-600">{getRoleDisplayName(vendor.role)}</p>
           </div>
 
-          {/* Amount Selection */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Select tip amount:</h3>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {[
-                { amount: recommendations.low, label: 'Good' },
-                { amount: recommendations.medium, label: 'Great' },
-                { amount: recommendations.high, label: 'Exceptional' }
-              ].map((option) => (
-                <button
-                  key={option.amount}
-                  onClick={() => {
-                    setSelectedAmount(option.amount);
-                    setCustomAmount('');
+                      {/* Amount Confirmation */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-800 mb-3">Confirm tip amount:</h3>
+              <div className="bg-pink-50 border-2 border-pink-200 rounded-lg p-4 mb-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-pink-600 mb-1">${selectedAmount}</div>
+                  <div className="text-sm text-pink-700">
+                    {selectedAmount < recommendations.low && "Good Service"}
+                    {selectedAmount >= recommendations.low && selectedAmount < recommendations.high && "Great Service"}
+                    {selectedAmount >= recommendations.high && "Exceptional Service"}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Or enter a different amount:
+                </label>
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  placeholder="Custom amount"
+                  value={customAmount}
+                  onChange={(e) => {
+                    setCustomAmount(e.target.value);
+                    if (e.target.value) {
+                      setSelectedAmount(parseFloat(e.target.value) || 0);
+                    }
                   }}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
-                    selectedAmount === option.amount
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="font-bold">${option.amount}</div>
-                  <div className="text-xs">{option.label}</div>
-                </button>
-              ))}
+                  className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
             </div>
-            
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-              <input
-                type="number"
-                placeholder="Custom amount"
-                value={customAmount}
-                onChange={(e) => {
-                  setCustomAmount(e.target.value);
-                  setSelectedAmount(0);
-                }}
-                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          </div>
 
           {/* Payment Method */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
