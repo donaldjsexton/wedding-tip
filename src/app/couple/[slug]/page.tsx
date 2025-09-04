@@ -154,11 +154,46 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
     setShowTipModal(true);
   };
 
-  const handlePaymentRedirect = (paymentMethod: string, vendor: Vendor, amount: number) => {
+  const handlePaymentRedirect = async (paymentMethod: string, vendor: Vendor, amount: number) => {
     const encodedAmount = encodeURIComponent(amount.toString());
     const encodedNote = encodeURIComponent(`Wedding tip for ${vendor.name}`);
     
     switch(paymentMethod) {
+      case 'STRIPE':
+        if (vendor.stripeAccountId) {
+          try {
+            const response = await fetch('/api/stripe/checkout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                vendorId: vendor.id,
+                vendorName: vendor.name,
+                amount: amount,
+                vendorStripeAccountId: vendor.stripeAccountId,
+                returnUrl: window.location.href
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create checkout session');
+            }
+
+            const { checkoutUrl } = await response.json();
+            
+            // Redirect to Stripe Checkout
+            window.location.href = checkoutUrl;
+            
+          } catch (error) {
+            console.error('Stripe checkout error:', error);
+            alert('Unable to process Stripe payment. Please try another payment method.');
+          }
+        } else {
+          alert('This vendor has not connected their Stripe account yet.');
+        }
+        break;
+        
       case 'VENMO':
         if (vendor.venmoHandle) {
           const venmoHandle = vendor.venmoHandle.replace('@', '');
@@ -511,31 +546,22 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                       </div>
                     </div>
 
-                    {selectedPaymentMethod === 'STRIPE' ? (
+                    <div className="space-y-3">
                       <button
                         onClick={() => {
-                          setSelectedVendor(selectedVendor);
-                          setShowTipModal(true);
+                          const amount = parseInt(customTipAmount) || tipSliderValue;
+                          handlePaymentRedirect(selectedPaymentMethod, selectedVendor, amount);
                         }}
                         className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                       >
-                        Process ${customTipAmount || tipSliderValue} Payment via Credit Card
+                        {selectedPaymentMethod === 'STRIPE' ? 'Pay' : 'Send'} ${customTipAmount || tipSliderValue} via {
+                          selectedPaymentMethod === 'STRIPE' ? 'Stripe' :
+                          selectedPaymentMethod === 'VENMO' ? 'Venmo' :
+                          selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
+                          selectedPaymentMethod === 'ZELLE' ? 'Zelle' : 'Payment App'
+                        }
                       </button>
-                    ) : (
-                      <div className="space-y-3">
-                        <button
-                          onClick={() => {
-                            const amount = parseInt(customTipAmount) || tipSliderValue;
-                            handlePaymentRedirect(selectedPaymentMethod, selectedVendor, amount);
-                          }}
-                          className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-                        >
-                          Send ${customTipAmount || tipSliderValue} via {
-                            selectedPaymentMethod === 'VENMO' ? 'Venmo' :
-                            selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
-                            selectedPaymentMethod === 'ZELLE' ? 'Zelle' : 'Payment App'
-                          }
-                        </button>
+                      {selectedPaymentMethod !== 'STRIPE' && (
                         <button
                           onClick={() => {
                             setSelectedVendor(selectedVendor);
@@ -545,8 +571,8 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                         >
                           Or mark as completed after sending
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </>
                 ) : (
                   <div className="text-center py-8">
