@@ -60,6 +60,37 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
         setLoading(false);
       }
     });
+    
+    // Handle Stripe Checkout return
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const cancelled = urlParams.get('cancelled');
+    const vendorId = urlParams.get('vendor');
+    const amount = urlParams.get('amount');
+    
+    if (success === 'true' && vendorId && amount) {
+      // Mark payment as completed
+      setTipAmounts(prev => ({ ...prev, [vendorId]: parseFloat(amount) }));
+      setCompletedTips(prev => new Set([...prev, vendorId]));
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Show success message
+      setTimeout(() => {
+        alert(`🎉 Payment successful! Your $${amount} tip has been sent via Stripe.`);
+      }, 500);
+    }
+    
+    if (cancelled === 'true') {
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Optionally show cancelled message
+      setTimeout(() => {
+        alert('⚠️ Payment was cancelled. You can try again or choose a different payment method.');
+      }, 500);
+    }
   }, [params]);
 
   if (loading) {
