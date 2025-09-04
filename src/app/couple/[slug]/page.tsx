@@ -36,7 +36,9 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [tipSliderValue, setTipSliderValue] = useState<number>(0);
+  const [tipSliderValue, setTipSliderValue] = useState<number>(50);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('STRIPE');
+  const [customTipAmount, setCustomTipAmount] = useState<string>('');
 
   useEffect(() => {
     // Handle async params and fetch wedding data
@@ -231,7 +233,12 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                     onClick={() => {
                       setSelectedVendor(vendor);
                       const recommendations = getTipRecommendations(vendor);
-                      setTipSliderValue(recommendations.medium);
+                      // Round to nearest $5
+                      const roundedAmount = Math.round(recommendations.medium / 5) * 5;
+                      setTipSliderValue(Math.max(5, Math.min(300, roundedAmount)));
+                      setCustomTipAmount('');
+                      // Set default payment method based on vendor preference
+                      setSelectedPaymentMethod(vendor.preferredPayment);
                     }}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       isSelected 
@@ -285,13 +292,13 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                     <div className="mb-6">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-semibold text-gray-800">Choose Your Tip Amount</h4>
-                        <div className="text-2xl font-bold text-pink-600">${tipSliderValue}</div>
+                        <div className="text-2xl font-bold text-pink-600">${customTipAmount || tipSliderValue}</div>
                       </div>
                       
                       {(() => {
                         const recommendations = getTipRecommendations(selectedVendor);
-                        const minTip = Math.max(5, Math.floor(recommendations.low * 0.5));
-                        const maxTip = recommendations.high * 2;
+                        const minTip = 5;
+                        const maxTip = 300;
                         
                         return (
                           <>
@@ -299,11 +306,15 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                               type="range"
                               min={minTip}
                               max={maxTip}
+                              step={5}
                               value={tipSliderValue}
-                              onChange={(e) => setTipSliderValue(parseInt(e.target.value))}
+                              onChange={(e) => {
+                                setTipSliderValue(parseInt(e.target.value));
+                                setCustomTipAmount(''); // Clear custom amount when using slider
+                              }}
                               className="w-full h-3 bg-gradient-to-r from-pink-200 via-pink-400 to-pink-600 rounded-lg appearance-none cursor-pointer slider"
                               style={{
-                                background: `linear-gradient(to right, #fce7f3 0%, #f9a8d4 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 50}%, #ec4899 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb 100%)`
+                                background: `linear-gradient(to right, #fce7f3 0%, #f9a8d4 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 30}%, #ec4899 ${((tipSliderValue - minTip) / (maxTip - minTip)) * 70}%, #be185d ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb ${((tipSliderValue - minTip) / (maxTip - minTip)) * 100}%, #e5e7eb 100%)`
                               }}
                             />
                             <div className="flex justify-between text-sm text-gray-600 mt-2">
@@ -313,22 +324,22 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                                 {tipSliderValue >= recommendations.low && tipSliderValue < recommendations.high && "😊 Great"}
                                 {tipSliderValue >= recommendations.high && "🤩 Amazing"}
                               </span>
-                              <span>${maxTip}+</span>
+                              <span>${maxTip}</span>
                             </div>
                             
                             {/* Reference Points */}
                             <div className="flex justify-between mt-4 text-xs">
-                              <div className={`text-center ${tipSliderValue === recommendations.low ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                              <div className={`text-center ${Math.abs(tipSliderValue - recommendations.low) <= 2 ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
                                 <div className="w-2 h-2 mx-auto rounded-full bg-gray-300 mb-1"></div>
                                 <p>Good Service</p>
                                 <p>${recommendations.low}</p>
                               </div>
-                              <div className={`text-center ${tipSliderValue === recommendations.medium ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                              <div className={`text-center ${Math.abs(tipSliderValue - recommendations.medium) <= 2 ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
                                 <div className="w-2 h-2 mx-auto rounded-full bg-pink-400 mb-1"></div>
                                 <p>Great Service</p>
                                 <p>${recommendations.medium}</p>
                               </div>
-                              <div className={`text-center ${tipSliderValue === recommendations.high ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
+                              <div className={`text-center ${Math.abs(tipSliderValue - recommendations.high) <= 2 ? 'text-pink-600 font-semibold' : 'text-gray-500'}`}>
                                 <div className="w-2 h-2 mx-auto rounded-full bg-pink-600 mb-1"></div>
                                 <p>Exceptional</p>
                                 <p>${recommendations.high}</p>
@@ -339,18 +350,68 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                       })()}
                     </div>
 
-                    {/* Payment Info and Action */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-700">Payment Method:</span>
-                        <div className="flex items-center">
-                          <span className="mr-2">{getPaymentIcon(selectedVendor.preferredPayment)}</span>
-                          <span className="text-sm font-medium">
-                            {selectedVendor.preferredPayment === 'VENMO' && selectedVendor.venmoHandle}
-                            {selectedVendor.preferredPayment === 'CASHAPP' && selectedVendor.cashAppHandle}
-                            {selectedVendor.preferredPayment === 'STRIPE' && 'Credit/Debit Card'}
-                          </span>
-                        </div>
+                    {/* Custom Amount Input */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Or enter a custom amount:
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="1000"
+                          value={customTipAmount}
+                          onChange={(e) => {
+                            setCustomTipAmount(e.target.value);
+                            if (e.target.value) {
+                              const amount = parseInt(e.target.value);
+                              if (amount >= 5 && amount <= 300) {
+                                setTipSliderValue(amount);
+                              }
+                            }
+                          }}
+                          className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Any amount from $1 to $1000</p>
+                    </div>
+
+                    {/* Payment Method Selection */}
+                    <div className="mb-6">
+                      <h4 className="font-semibold text-gray-800 mb-3">Choose Payment Method:</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: 'STRIPE', label: 'Credit Card', icon: '💳', available: true },
+                          { key: 'VENMO', label: 'Venmo', icon: '💜', available: selectedVendor.venmoHandle, detail: selectedVendor.venmoHandle },
+                          { key: 'CASHAPP', label: 'Cash App', icon: '💚', available: selectedVendor.cashAppHandle, detail: selectedVendor.cashAppHandle },
+                          { key: 'ZELLE', label: 'Zelle', icon: '🏦', available: selectedVendor.email || selectedVendor.phone, detail: selectedVendor.email || selectedVendor.phone }
+                        ].map((method) => (
+                          <button
+                            key={method.key}
+                            onClick={() => setSelectedPaymentMethod(method.key)}
+                            disabled={!method.available}
+                            className={`p-4 rounded-lg border-2 transition-colors ${
+                              !method.available
+                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : selectedPaymentMethod === method.key
+                                ? 'border-pink-500 bg-pink-50 text-pink-700'
+                                : 'border-gray-300 hover:border-pink-300 hover:bg-pink-25'
+                            }`}
+                          >
+                            <div className="text-center">
+                              <div className="text-2xl mb-2">{method.icon}</div>
+                              <div className="font-medium">{method.label}</div>
+                              {method.available && method.detail && (
+                                <div className="text-xs text-gray-600 mt-1 truncate">{method.detail}</div>
+                              )}
+                              {!method.available && (
+                                <div className="text-xs text-gray-400 mt-1">Not available</div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -361,7 +422,12 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                       }}
                       className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                     >
-                      Tip ${tipSliderValue} Now
+                      Tip ${customTipAmount || tipSliderValue} via {
+                        selectedPaymentMethod === 'STRIPE' ? 'Credit Card' :
+                        selectedPaymentMethod === 'VENMO' ? 'Venmo' :
+                        selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
+                        selectedPaymentMethod === 'ZELLE' ? 'Zelle' : 'Card'
+                      }
                     </button>
                   </>
                 ) : (
@@ -406,7 +472,8 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
       {showTipModal && selectedVendor && (
         <TipModal
           vendor={selectedVendor}
-          initialAmount={tipSliderValue}
+          initialAmount={parseInt(customTipAmount) || tipSliderValue}
+          paymentMethod={selectedPaymentMethod}
           onComplete={handleTipComplete}
           onClose={() => {
             setShowTipModal(false);
@@ -421,11 +488,13 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
 function TipModal({ 
   vendor, 
   initialAmount,
+  paymentMethod,
   onComplete, 
   onClose 
 }: { 
   vendor: Vendor; 
   initialAmount: number;
+  paymentMethod: string;
   onComplete: (vendorId: string, amount: number) => void;
   onClose: () => void;
 }) {
@@ -533,14 +602,16 @@ function TipModal({
               <span className="text-sm text-gray-800">Payment Method:</span>
               <div className="flex items-center">
                 <span className="mr-2">
-                  {vendor.preferredPayment === 'VENMO' && '💜'}
-                  {vendor.preferredPayment === 'CASHAPP' && '💚'}
-                  {vendor.preferredPayment === 'STRIPE' && '💳'}
+                  {paymentMethod === 'VENMO' && '💜'}
+                  {paymentMethod === 'CASHAPP' && '💚'}
+                  {paymentMethod === 'STRIPE' && '💳'}
+                  {paymentMethod === 'ZELLE' && '🏦'}
                 </span>
                 <span className="font-medium">
-                  {vendor.preferredPayment === 'VENMO' && vendor.venmoHandle}
-                  {vendor.preferredPayment === 'CASHAPP' && vendor.cashAppHandle}
-                  {vendor.preferredPayment === 'STRIPE' && 'Credit Card'}
+                  {paymentMethod === 'VENMO' && (vendor.venmoHandle || 'Venmo')}
+                  {paymentMethod === 'CASHAPP' && (vendor.cashAppHandle || 'Cash App')}
+                  {paymentMethod === 'STRIPE' && 'Credit Card'}
+                  {paymentMethod === 'ZELLE' && 'Zelle'}
                 </span>
               </div>
             </div>
