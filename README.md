@@ -44,13 +44,31 @@ A Next.js application that simplifies wedding vendor tipping for couples and coo
    npm install
    ```
 
-2. **Set up environment**:
+2. **Set up database**:
+   
+   For both development and production, you'll need a PostgreSQL database. 
+   
+   **Option A: Free Cloud PostgreSQL (Recommended)**
+   - **Neon**: Visit [neon.tech](https://neon.tech), create free account, get connection string
+   - **Supabase**: Visit [supabase.com](https://supabase.com), create free account, get connection string
+   
+   **Option B: Local PostgreSQL**
+   - Install PostgreSQL locally or use Docker
+   - Create database: `createdb wedding_tip_db`
+
+3. **Set up environment**:
+   Create `.env.local` file with your database URL:
    ```bash
-   cp .env.example .env.local
-   # Add your database URL and Stripe keys
+   # .env.local
+   DATABASE_URL="postgresql://username:password@host:5432/database_name"
+   
+   # Stripe keys (use test keys for development)
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+   STRIPE_SECRET_KEY="sk_test_..."
+   STRIPE_WEBHOOK_SECRET="whsec_..."
    ```
 
-3. **Initialize database**:
+4. **Initialize database**:
    ```bash
    npx prisma generate
    npx prisma db push
