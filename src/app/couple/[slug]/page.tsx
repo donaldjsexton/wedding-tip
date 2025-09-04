@@ -163,28 +163,35 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
         if (vendor.venmoHandle) {
           const venmoHandle = vendor.venmoHandle.replace('@', '');
           
-          // Try multiple approaches for better compatibility
-          const tryVenmoDeepLink = () => {
-            // Method 1: Try Venmo app deep link
-            const venmoAppUrl = `venmo://paycharge?txn=pay&recipients=${venmoHandle}&amount=${amount}&note=${encodedNote}`;
-            window.location.href = venmoAppUrl;
+          // Create a more reliable deep link approach
+          const tryVenmoApp = () => {
+            // Create a temporary link element for better compatibility
+            const link = document.createElement('a');
+            link.href = `https://venmo.com/u/${venmoHandle}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
             
-            // Method 2: Fallback to web URL after short delay
+            // Try to trigger click programmatically
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // If that doesn't work, use location.href as fallback
             setTimeout(() => {
-              const venmoWebUrl = `https://venmo.com/u/${venmoHandle}?txn=pay&amount=${encodedAmount}&note=${encodedNote}`;
-              window.open(venmoWebUrl, '_blank');
-            }, 1000);
+              if (confirm('Click OK if Venmo didn\'t open and you\'d like to try again')) {
+                window.location.href = `https://venmo.com/u/${venmoHandle}`;
+              }
+            }, 2000);
           };
           
-          // Show user guidance
           const shouldProceed = confirm(
             `💜 Opening Venmo to send $${amount} to ${vendor.name}\n\n` +
-            `If Venmo app doesn't open automatically, you'll be redirected to Venmo's website.\n\n` +
+            `You'll be redirected to Venmo to complete the payment.\n\n` +
             `Click OK to proceed, or Cancel to choose a different payment method.`
           );
           
           if (shouldProceed) {
-            tryVenmoDeepLink();
+            tryVenmoApp();
           }
         }
         break;
@@ -193,26 +200,34 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
         if (vendor.cashAppHandle) {
           const cashHandle = vendor.cashAppHandle.replace('$', '');
           
-          const tryCashAppDeepLink = () => {
-            // Method 1: Try CashApp deep link
-            const cashAppUrl = `cashapp://qr/${cashHandle}`;
-            window.location.href = cashAppUrl;
+          const tryCashApp = () => {
+            // Create a temporary link element for better compatibility
+            const link = document.createElement('a');
+            link.href = `https://cash.app/$${cashHandle}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
             
-            // Method 2: Fallback to web URL
+            // Try to trigger click programmatically
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // If that doesn't work, use location.href as fallback
             setTimeout(() => {
-              const cashWebUrl = `https://cash.app/$${cashHandle}`;
-              window.open(cashWebUrl, '_blank');
-            }, 1000);
+              if (confirm('Click OK if Cash App didn\'t open and you\'d like to try again')) {
+                window.location.href = `https://cash.app/$${cashHandle}`;
+              }
+            }, 2000);
           };
           
           const shouldProceed = confirm(
             `💚 Opening Cash App to send $${amount} to ${vendor.name}\n\n` +
-            `If Cash App doesn't open automatically, you'll be redirected to their website.\n\n` +
+            `You'll be redirected to Cash App to complete the payment.\n\n` +
             `Click OK to proceed, or Cancel to choose a different payment method.`
           );
           
           if (shouldProceed) {
-            tryCashAppDeepLink();
+            tryCashApp();
           }
         }
         break;
@@ -496,27 +511,42 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        const amount = parseInt(customTipAmount) || tipSliderValue;
-                        if (selectedPaymentMethod === 'STRIPE') {
-                          // Open payment modal for credit card processing
+                    {selectedPaymentMethod === 'STRIPE' ? (
+                      <button
+                        onClick={() => {
                           setSelectedVendor(selectedVendor);
                           setShowTipModal(true);
-                        } else {
-                          // Handle direct payment app redirects
-                          handlePaymentRedirect(selectedPaymentMethod, selectedVendor, amount);
-                        }
-                      }}
-                      className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-                    >
-                      {selectedPaymentMethod === 'STRIPE' ? 'Process Payment' : 'Open'} ${customTipAmount || tipSliderValue} via {
-                        selectedPaymentMethod === 'STRIPE' ? 'Credit Card' :
-                        selectedPaymentMethod === 'VENMO' ? 'Venmo' :
-                        selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
-                        selectedPaymentMethod === 'ZELLE' ? 'Zelle' : 'Card'
-                      }
-                    </button>
+                        }}
+                        className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                      >
+                        Process ${customTipAmount || tipSliderValue} Payment via Credit Card
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            const amount = parseInt(customTipAmount) || tipSliderValue;
+                            handlePaymentRedirect(selectedPaymentMethod, selectedVendor, amount);
+                          }}
+                          className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                        >
+                          Send ${customTipAmount || tipSliderValue} via {
+                            selectedPaymentMethod === 'VENMO' ? 'Venmo' :
+                            selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
+                            selectedPaymentMethod === 'ZELLE' ? 'Zelle' : 'Payment App'
+                          }
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedVendor(selectedVendor);
+                            setShowTipModal(true);
+                          }}
+                          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                        >
+                          Or mark as completed after sending
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-8">
