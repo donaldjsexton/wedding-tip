@@ -70,3 +70,12 @@ select:focus,
 textarea {
   font-size: 16px;
 }
+
+/* Ensure input text is dark and readable */
+input, textarea, select {
+  color: #1f2937 !important; /* Dark gray text */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important; /* Medium gray for placeholder */
+}
