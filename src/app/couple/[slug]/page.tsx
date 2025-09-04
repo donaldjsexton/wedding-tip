@@ -154,6 +154,87 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
     setShowTipModal(true);
   };
 
+  const handlePaymentRedirect = (paymentMethod: string, vendor: Vendor, amount: number) => {
+    const encodedAmount = encodeURIComponent(amount.toString());
+    const encodedNote = encodeURIComponent(`Wedding tip for ${vendor.name}`);
+    
+    switch(paymentMethod) {
+      case 'VENMO':
+        if (vendor.venmoHandle) {
+          const venmoHandle = vendor.venmoHandle.replace('@', '');
+          
+          // Try multiple approaches for better compatibility
+          const tryVenmoDeepLink = () => {
+            // Method 1: Try Venmo app deep link
+            const venmoAppUrl = `venmo://paycharge?txn=pay&recipients=${venmoHandle}&amount=${amount}&note=${encodedNote}`;
+            window.location.href = venmoAppUrl;
+            
+            // Method 2: Fallback to web URL after short delay
+            setTimeout(() => {
+              const venmoWebUrl = `https://venmo.com/u/${venmoHandle}?txn=pay&amount=${encodedAmount}&note=${encodedNote}`;
+              window.open(venmoWebUrl, '_blank');
+            }, 1000);
+          };
+          
+          // Show user guidance
+          const shouldProceed = confirm(
+            `💜 Opening Venmo to send $${amount} to ${vendor.name}\n\n` +
+            `If Venmo app doesn't open automatically, you'll be redirected to Venmo's website.\n\n` +
+            `Click OK to proceed, or Cancel to choose a different payment method.`
+          );
+          
+          if (shouldProceed) {
+            tryVenmoDeepLink();
+          }
+        }
+        break;
+        
+      case 'CASHAPP':
+        if (vendor.cashAppHandle) {
+          const cashHandle = vendor.cashAppHandle.replace('$', '');
+          
+          const tryCashAppDeepLink = () => {
+            // Method 1: Try CashApp deep link
+            const cashAppUrl = `cashapp://qr/${cashHandle}`;
+            window.location.href = cashAppUrl;
+            
+            // Method 2: Fallback to web URL
+            setTimeout(() => {
+              const cashWebUrl = `https://cash.app/$${cashHandle}`;
+              window.open(cashWebUrl, '_blank');
+            }, 1000);
+          };
+          
+          const shouldProceed = confirm(
+            `💚 Opening Cash App to send $${amount} to ${vendor.name}\n\n` +
+            `If Cash App doesn't open automatically, you'll be redirected to their website.\n\n` +
+            `Click OK to proceed, or Cancel to choose a different payment method.`
+          );
+          
+          if (shouldProceed) {
+            tryCashAppDeepLink();
+          }
+        }
+        break;
+        
+      case 'ZELLE':
+        const zelleInstructions = 
+          `🏦 To complete your $${amount} tip via Zelle:\n\n` +
+          `1. Open your banking app or Zelle app\n` +
+          `2. Go to "Send Money" or "Zelle"\n` +
+          `3. Send to: ${vendor.email || vendor.phone}\n` +
+          `4. Amount: $${amount}\n` +
+          `5. Memo: Wedding tip for ${vendor.name}\n\n` +
+          `After sending, please confirm completion by clicking "Mark as Tipped" in the next dialog.`;
+        
+        alert(zelleInstructions);
+        break;
+        
+      default:
+        break;
+    }
+  };
+
   const handleTipComplete = (vendorId: string, amount: number) => {
     setTipAmounts(prev => ({ ...prev, [vendorId]: amount }));
     setCompletedTips(prev => new Set([...prev, vendorId]));
@@ -417,12 +498,19 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
 
                     <button
                       onClick={() => {
-                        setSelectedVendor(selectedVendor);
-                        setShowTipModal(true);
+                        const amount = parseInt(customTipAmount) || tipSliderValue;
+                        if (selectedPaymentMethod === 'STRIPE') {
+                          // Open payment modal for credit card processing
+                          setSelectedVendor(selectedVendor);
+                          setShowTipModal(true);
+                        } else {
+                          // Handle direct payment app redirects
+                          handlePaymentRedirect(selectedPaymentMethod, selectedVendor, amount);
+                        }
                       }}
                       className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                     >
-                      Tip ${customTipAmount || tipSliderValue} via {
+                      {selectedPaymentMethod === 'STRIPE' ? 'Process Payment' : 'Open'} ${customTipAmount || tipSliderValue} via {
                         selectedPaymentMethod === 'STRIPE' ? 'Credit Card' :
                         selectedPaymentMethod === 'VENMO' ? 'Venmo' :
                         selectedPaymentMethod === 'CASHAPP' ? 'Cash App' :
@@ -626,20 +714,35 @@ function TipModal({
             >
               Cancel
             </button>
-            <button
-              onClick={handlePayment}
-              disabled={(!selectedAmount && !customAmount) || processingPayment}
-              className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center"
-            >
-              {processingPayment ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Processing...
-                </>
-              ) : (
-                `Tip $${selectedAmount || customAmount || '0'}`
-              )}
-            </button>
+            {paymentMethod === 'STRIPE' ? (
+              <button
+                onClick={handlePayment}
+                disabled={(!selectedAmount && !customAmount) || processingPayment}
+                className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center"
+              >
+                {processingPayment ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  `Process $${selectedAmount || customAmount || '0'} Payment`
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  // For non-Stripe payments, mark as completed immediately
+                  // since the user will handle payment externally
+                  const amount = selectedAmount || parseFloat(customAmount);
+                  onComplete(vendor.id, amount);
+                }}
+                disabled={(!selectedAmount && !customAmount)}
+                className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors"
+              >
+                Mark as Tipped $${selectedAmount || customAmount || '0'}
+              </button>
+            )}
           </div>
         </div>
       </div>
