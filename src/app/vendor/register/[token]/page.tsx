@@ -218,7 +218,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading invitation...</p>
+          <p className="text-gray-800">Loading invitation...</p>
         </div>
       </div>
     );
@@ -230,7 +230,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Invalid Invitation</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-800 mb-6">
             This invitation link is invalid or has been cancelled.
           </p>
           <Link 
@@ -251,15 +251,15 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">⏰</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Invitation Expired</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-800 mb-6">
             This invitation expired on {formatDate(invitation.expiresAt)}. 
             Please contact {invitation.coordinator.name} for a new invitation.
           </p>
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-800">
               <strong>Coordinator:</strong> {invitation.coordinator.name}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-800">
               <strong>Email:</strong> {invitation.coordinator.email}
             </p>
           </div>
@@ -275,7 +275,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-2xl font-bold text-green-800 mb-4">Registration Complete!</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-800 mb-6">
             Welcome to the TipWedding vendor network! You&apos;ve been successfully registered and added to {invitation.wedding.coupleName}&apos;s wedding.
           </p>
           <div className="bg-green-50 rounded-lg p-4 mb-6 text-left">
@@ -307,7 +307,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
             <Heart className="h-8 w-8 text-purple-500 mr-3" />
             <h1 className="text-3xl font-bold text-gray-800">TipWedding</h1>
           </div>
-          <p className="text-gray-600">Vendor Registration</p>
+          <p className="text-gray-800">Vendor Registration</p>
         </div>
 
         {/* Invitation Details Card */}
@@ -321,7 +321,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
             <div className="flex items-center">
               <User className="h-4 w-4 text-gray-400 mr-3" />
               <div>
-                <span className="text-gray-600">Invited by:</span>
+                <span className="text-gray-800">Invited by:</span>
                 <span className="ml-2 font-medium">{invitation.coordinator.name}</span>
                 {invitation.coordinator.company && (
                   <span className="text-gray-500"> • {invitation.coordinator.company}</span>
@@ -332,7 +332,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
             <div className="flex items-center">
               <Heart className="h-4 w-4 text-pink-400 mr-3" />
               <div>
-                <span className="text-gray-600">Wedding:</span>
+                <span className="text-gray-800">Wedding:</span>
                 <span className="ml-2 font-medium">{invitation.wedding.coupleName}</span>
               </div>
             </div>
@@ -340,7 +340,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
             <div className="flex items-center">
               <Clock className="h-4 w-4 text-purple-400 mr-3" />
               <div>
-                <span className="text-gray-600">Date:</span>
+                <span className="text-gray-800">Date:</span>
                 <span className="ml-2">{formatDate(invitation.wedding.weddingDate)}</span>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 text-green-400 mr-3" />
                 <div>
-                  <span className="text-gray-600">Venue:</span>
+                  <span className="text-gray-800">Venue:</span>
                   <span className="ml-2">{invitation.wedding.venue}</span>
                 </div>
               </div>
@@ -358,7 +358,7 @@ export default function VendorRegistration({ params }: { params: Promise<{ token
             <div className="flex items-center">
               <CheckCircle className="h-4 w-4 text-blue-400 mr-3" />
               <div>
-                <span className="text-gray-600">Role:</span>
+                <span className="text-gray-800">Role:</span>
                 <span className="ml-2 font-medium">{getRoleDisplayName(invitation.role)}</span>
               </div>
             </div>

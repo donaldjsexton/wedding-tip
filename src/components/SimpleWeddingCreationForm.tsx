@@ -71,7 +71,7 @@ export default function SimpleWeddingCreationForm({
             </div>
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-800 text-2xl leading-none"
             >
               <X className="h-5 w-5" />
             </button>

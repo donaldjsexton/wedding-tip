@@ -241,7 +241,7 @@ export default function VendorManagementPage() {
       case 'ACTIVE': return 'text-green-600 bg-green-100';
       case 'PENDING': return 'text-yellow-600 bg-yellow-100';
       case 'SUSPENDED': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      default: return 'text-gray-800 bg-gray-100';
     }
   };
 
@@ -259,7 +259,7 @@ export default function VendorManagementPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading vendor management...</p>
+          <p className="text-gray-800">Loading vendor management...</p>
         </div>
       </div>
     );
@@ -274,7 +274,7 @@ export default function VendorManagementPage() {
             <div className="flex items-center">
               <Link
                 href="/coordinator"
-                className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+                className="flex items-center text-gray-800 hover:text-gray-800 mr-4"
               >
                 <ArrowLeft className="h-5 w-5 mr-1" />
                 Back to Dashboard
@@ -284,7 +284,7 @@ export default function VendorManagementPage() {
                   <Users className="h-6 w-6 mr-2 text-purple-500" />
                   Vendor Management
                 </h1>
-                <p className="text-gray-600">Manage your vendor roster across all weddings</p>
+                <p className="text-gray-800">Manage your vendor roster across all weddings</p>
               </div>
             </div>
 
@@ -338,7 +338,7 @@ export default function VendorManagementPage() {
               ))}
             </select>
 
-            <div className="text-sm text-gray-600 flex items-center">
+            <div className="text-sm text-gray-800 flex items-center">
               <strong>{filteredVendors.length}</strong>&nbsp;of&nbsp;<strong>{vendors.length}</strong>&nbsp;vendors
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function VendorManagementPage() {
         {filteredVendors.length === 0 ? (
           <div className="text-center py-16">
             <Users className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {searchQuery || statusFilter !== 'ALL' || roleFilter !== 'ALL' ? 
                 'No vendors match your filters' : 'No Vendors Yet'}
             </h2>
@@ -390,19 +390,19 @@ export default function VendorManagementPage() {
 
                     <div className="space-y-2 mb-4 text-sm">
                       {vendor.email && (
-                        <div className="flex items-center text-gray-600">
+                        <div className="flex items-center text-gray-800">
                           <Mail className="h-4 w-4 mr-2" />
                           <span className="truncate">{vendor.email}</span>
                         </div>
                       )}
                       {vendor.phone && (
-                        <div className="flex items-center text-gray-600">
+                        <div className="flex items-center text-gray-800">
                           <Phone className="h-4 w-4 mr-2" />
                           <span>{vendor.phone}</span>
                         </div>
                       )}
                       {vendor.website && (
-                        <div className="flex items-center text-gray-600">
+                        <div className="flex items-center text-gray-800">
                           <Globe className="h-4 w-4 mr-2" />
                           <a href={vendor.website} target="_blank" rel="noopener noreferrer" 
                              className="text-purple-600 hover:underline truncate">
@@ -411,7 +411,7 @@ export default function VendorManagementPage() {
                         </div>
                       )}
                       {vendor.serviceArea && (
-                        <div className="text-gray-600">
+                        <div className="text-gray-800">
                           <span className="font-medium">Service Area:</span> {vendor.serviceArea}
                         </div>
                       )}
@@ -437,7 +437,7 @@ export default function VendorManagementPage() {
                         <div className="text-sm font-medium text-gray-700 mb-2">Recent Weddings:</div>
                         <div className="space-y-1">
                           {vendor.recentWeddings.slice(0, 2).map((wedding) => (
-                            <div key={wedding.id} className="text-sm text-gray-600">
+                            <div key={wedding.id} className="text-sm text-gray-800">
                               • {wedding.coupleName} ({new Date(wedding.weddingDate).toLocaleDateString()})
                             </div>
                           ))}
@@ -453,7 +453,7 @@ export default function VendorManagementPage() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => handleEdit(vendor)}
-                        className="inline-flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="inline-flex items-center text-gray-800 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                         title="Edit vendor"
                       >
                         <Edit className="h-4 w-4" />
@@ -485,7 +485,7 @@ export default function VendorManagementPage() {
                 </h2>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                  className="text-gray-400 hover:text-gray-800 text-2xl leading-none"
                 >
                   ✕
                 </button>
@@ -593,7 +593,7 @@ export default function VendorManagementPage() {
 
               <div className="border-t pt-6 mb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Methods</h3>
-                <p className="text-sm text-gray-600 mb-4">Select all payment methods this vendor accepts</p>
+                <p className="text-sm text-gray-800 mb-4">Select all payment methods this vendor accepts</p>
                 
                 <div className="space-y-4">
                   {PAYMENT_METHODS.map(method => (
@@ -645,7 +645,7 @@ export default function VendorManagementPage() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                  className="px-6 py-2 text-gray-800 hover:text-gray-800 font-medium"
                 >
                   Cancel
                 </button>

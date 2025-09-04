@@ -27,54 +27,7 @@ interface Wedding {
   vendors: Vendor[];
 }
 
-// Sample data for demo
-const sampleWedding: Wedding = {
-  id: 'sample-1',
-  slug: 'sample-wedding-abc123',
-  coupleName: 'Sarah & Michael',
-  weddingDate: '2024-06-15T16:00:00.000Z',
-  venue: 'Rosewood Manor',
-  vendors: [
-    {
-      id: 'v1',
-      name: 'Rev. Johnson',
-      role: 'OFFICIANT',
-      email: 'rev.johnson@email.com',
-      preferredPayment: 'VENMO',
-      venmoHandle: '@revjohnson',
-      serviceHours: 2,
-      serviceRate: 300
-    },
-    {
-      id: 'v2', 
-      name: 'Emma Williams',
-      role: 'COORDINATOR',
-      email: 'emma@weddingpros.com',
-      phone: '(555) 123-4567',
-      preferredPayment: 'STRIPE',
-      serviceHours: 10,
-      serviceRate: 150
-    },
-    {
-      id: 'v3',
-      name: 'Mike & Tony',
-      role: 'SETUP_ATTENDANT',
-      preferredPayment: 'CASHAPP',
-      cashAppHandle: '$mikeandtony',
-      serviceHours: 4,
-      customTipAmount: 80
-    },
-    {
-      id: 'v4',
-      name: 'Jessica Photo Co.',
-      role: 'PHOTOGRAPHER',
-      email: 'hello@jessicaphoto.com',
-      preferredPayment: 'STRIPE',
-      serviceHours: 8,
-      serviceRate: 200
-    }
-  ]
-};
+// This will be fetched from the API
 
 export default function CoupleTippingPage({ params }: { params: Promise<{ slug: string }> }) {
   const [wedding, setWedding] = useState<Wedding | null>(null);
@@ -82,24 +35,50 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
   const [tipAmounts, setTipAmounts] = useState<{[key: string]: number}>({});
   const [showTipModal, setShowTipModal] = useState(false);
   const [completedTips, setCompletedTips] = useState<Set<string>>(new Set());
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Handle async params in useEffect
-    params.then(({ slug }) => {
-      // For demo, use sample data. In real app, fetch from API
-      if (slug === 'sample-wedding-abc123') {
-        setWedding(sampleWedding);
+    // Handle async params and fetch wedding data
+    params.then(async ({ slug }) => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/wedding/${slug}`);
+        if (response.ok) {
+          const weddingData = await response.json();
+          setWedding(weddingData);
+        } else {
+          console.error('Failed to fetch wedding data');
+          setWedding(null);
+        }
+      } catch (error) {
+        console.error('Error fetching wedding:', error);
+        setWedding(null);
+      } finally {
+        setLoading(false);
       }
     });
   }, [params]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <Heart className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading Wedding Details</h2>
+          <p className="text-gray-500">
+            Please wait while we fetch your wedding information...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!wedding) {
     return (
       <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <Heart className="h-16 w-16 text-pink-300 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-gray-600 mb-2">Wedding Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Wedding Not Found</h2>
           <p className="text-gray-500">
             Please check your wedding code and try again.
           </p>
@@ -193,7 +172,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                 {wedding.coupleName}
               </h1>
             </div>
-            <p className="text-gray-600 text-lg">{formatDate(wedding.weddingDate)}</p>
+            <p className="text-gray-800 text-lg">{formatDate(wedding.weddingDate)}</p>
             {wedding.venue && (
               <p className="text-gray-500">📍 {wedding.venue}</p>
             )}
@@ -217,7 +196,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
               style={{ width: `${(completedTips.size / wedding.vendors.length) * 100}%` }}
             />
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-800">
             {completedTips.size} of {wedding.vendors.length} vendors tipped
           </p>
         </div>
@@ -262,7 +241,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
                           {getRoleDisplayName(vendor.role)}
                         </p>
                         {vendor.serviceHours && (
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-800">
                             Service time: {vendor.serviceHours} hours
                           </p>
                         )}
@@ -305,7 +284,7 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
 
                       {/* Payment Info */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-gray-800">
                           <span className="mr-2">{getPaymentIcon(vendor.preferredPayment)}</span>
                           <span>
                             {vendor.preferredPayment === 'VENMO' && vendor.venmoHandle}
@@ -482,7 +461,7 @@ function TipModal({
           {/* Payment Method */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Payment Method:</span>
+              <span className="text-sm text-gray-800">Payment Method:</span>
               <div className="flex items-center">
                 <span className="mr-2">
                   {vendor.preferredPayment === 'VENMO' && '💜'}

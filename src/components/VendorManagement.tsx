@@ -308,7 +308,7 @@ export default function VendorManagement({
           <div className="p-4">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Vendor Roster</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-800">
                 Add vendors from your roster that you&apos;ve worked with before. 
                 <Link href="/coordinator/vendors" className="text-purple-600 hover:underline ml-1">
                   Manage full roster →
@@ -369,7 +369,7 @@ export default function VendorManagement({
           <div className="p-4">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Search Platform Vendors</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-800">
                 Search for vendors across the platform who have worked with other coordinators.
               </p>
             </div>
@@ -452,7 +452,7 @@ export default function VendorManagement({
                           href={vendor.website} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-gray-600"
+                          className="text-gray-400 hover:text-gray-800"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </a>
@@ -492,7 +492,7 @@ export default function VendorManagement({
           <div className="p-4">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Invite New Vendor</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-800">
                 Send an invitation to a vendor not yet on the platform.
               </p>
             </div>
@@ -596,7 +596,7 @@ export default function VendorManagement({
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {inviteResult.type === 'invitation_created_email_skipped' ? '📧 Email Configuration Required' : '✅ Invitation Sent'}
               </h3>
-              <p className="text-gray-600 mb-4">{inviteResult.message}</p>
+              <p className="text-gray-800 mb-4">{inviteResult.message}</p>
               
               {inviteResult.registrationUrl && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -631,7 +631,7 @@ export default function VendorManagement({
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setInviteResult(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                className="px-4 py-2 text-gray-800 hover:text-gray-800 font-medium"
               >
                 Close
               </button>

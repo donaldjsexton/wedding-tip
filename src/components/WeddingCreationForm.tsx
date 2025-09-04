@@ -149,7 +149,7 @@ export default function WeddingCreationForm({
             <h2 className="text-2xl font-bold text-gray-800">Create New Wedding</h2>
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-800 text-2xl leading-none"
             >
               ×
             </button>

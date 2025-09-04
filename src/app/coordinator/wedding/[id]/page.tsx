@@ -177,7 +177,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading wedding details...</p>
+          <p className="text-gray-800">Loading wedding details...</p>
         </div>
       </div>
     );
@@ -187,7 +187,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-600 mb-4">Wedding Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Wedding Not Found</h2>
           <Link 
             href="/coordinator"
             className="text-purple-600 hover:underline"
@@ -214,7 +214,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
             <div className="flex items-center">
               <button
                 onClick={() => router.push('/coordinator')}
-                className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+                className="flex items-center text-gray-800 hover:text-gray-800 mr-4"
               >
                 <ArrowLeft className="h-5 w-5 mr-1" />
                 Back to Dashboard
@@ -223,7 +223,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                 <h1 className="text-2xl font-bold text-gray-800">
                   {wedding.coupleName}
                 </h1>
-                <p className="text-gray-600 flex items-center">
+                <p className="text-gray-800 flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
                   {formatDate(wedding.weddingDate)}
                 </p>
@@ -273,7 +273,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">Wedding Details</h2>
-                <button className="text-gray-400 hover:text-gray-600">
+                <button className="text-gray-400 hover:text-gray-800">
                   <Edit className="h-4 w-4" />
                 </button>
               </div>
@@ -355,7 +355,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                           </p>
                         </div>
                       </div>
-                      <button className="text-gray-400 hover:text-gray-600">
+                      <button className="text-gray-400 hover:text-gray-800">
                         <Edit className="h-4 w-4" />
                       </button>
                     </div>
@@ -440,7 +440,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                   />
                 </div>
 
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-gray-800">
                   <span>{completedTips} of {wedding.vendors.length} vendors tipped</span>
                   <span>{Math.round((completedTips / wedding.vendors.length) * 100)}%</span>
                 </div>
@@ -509,7 +509,7 @@ export default function WeddingManagementPage({ params }: { params: Promise<{ id
                 </h2>
                 <button
                   onClick={() => setShowVendorManagement(false)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                  className="text-gray-400 hover:text-gray-800 text-2xl leading-none"
                 >
                   ✕
                 </button>

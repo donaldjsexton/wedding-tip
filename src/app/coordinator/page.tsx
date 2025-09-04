@@ -133,7 +133,7 @@ export default function CoordinatorDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <p className="text-gray-800">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -150,7 +150,7 @@ export default function CoordinatorDashboard() {
                 <h1 className="text-2xl font-bold text-gray-800">
                   Coordinator Dashboard
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-800">
                   Welcome back, {coordinator.name}
                 </p>
               </div>
@@ -172,7 +172,7 @@ export default function CoordinatorDashboard() {
               </button>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center text-gray-800 hover:text-gray-800 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -186,7 +186,7 @@ export default function CoordinatorDashboard() {
         {weddings.length === 0 ? (
           <div className="text-center py-16">
             <Calendar className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
               No Weddings Yet
             </h2>
             <p className="text-gray-500 mb-8 max-w-md mx-auto">
@@ -230,7 +230,7 @@ export default function CoordinatorDashboard() {
                     </div>
 
                     <div className="border-t pt-4 mb-4">
-                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                      <div className="flex items-center text-sm text-gray-800 mb-2">
                         <Users className="h-4 w-4 mr-2" />
                         {wedding.vendors.length} Vendors
                       </div>
@@ -252,7 +252,7 @@ export default function CoordinatorDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-800">
                         <span className="font-medium">Wedding Code:</span>{' '}
                         <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
                           {wedding.slug}

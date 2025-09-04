@@ -12,7 +12,7 @@ export default function Home() {
               TipWedding
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-800 max-w-2xl mx-auto">
             Simplify wedding vendor tipping for couples and coordinators. 
             Never wonder who to tip, how much, or how again.
           </p>
@@ -26,7 +26,7 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 For Wedding Coordinators
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-800 mb-8">
                 Set up personalized tipping experiences for your couples. 
                 Manage vendors and create custom tip recommendations.
               </p>
@@ -46,13 +46,13 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 For Couples
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-800 mb-8">
                 Access your personalized tipping guide with vendor details, 
                 recommended amounts, and easy payment options.
               </p>
               <div className="space-y-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Have a wedding code?</p>
+                  <p className="text-sm text-gray-800 mb-2">Have a wedding code?</p>
                   <input 
                     type="text" 
                     placeholder="Enter your wedding code..."
@@ -81,7 +81,7 @@ export default function Home() {
                   <span className="text-purple-600 font-bold">1</span>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Setup</h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-800">
                   Coordinator creates wedding profile with vendor details
                 </p>
               </div>
@@ -90,7 +90,7 @@ export default function Home() {
                   <span className="text-pink-600 font-bold">2</span>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Review</h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-800">
                   Couples review vendor list and tip recommendations
                 </p>
               </div>
@@ -99,7 +99,7 @@ export default function Home() {
                   <span className="text-green-600 font-bold">3</span>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Tip</h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-800">
                   Pay tips digitally or get cash guidance
                 </p>
               </div>
