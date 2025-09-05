@@ -124,19 +124,7 @@ export default function CoordinatorLogin() {
               )}
             </button>
           </form>
-
-          {/* Demo Account Info */}
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-blue-800 mb-2">📋 Demo Account</h3>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p><strong>Email:</strong> demo@weddingcoordinator.com</p>
-              <p><strong>Password:</strong> demo123</p>
-              <p className="text-xs mt-2 text-blue-600">
-                Use these credentials to test the coordinator features
-              </p>
-            </div>
-          </div>
-
+          
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
