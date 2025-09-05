@@ -11,6 +11,7 @@ interface Vendor {
   email?: string;
   phone?: string;
   preferredPayment: string;
+  stripeAccountId?: string;
   venmoHandle?: string;
   cashAppHandle?: string;
   serviceHours?: number;
@@ -150,14 +151,6 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
     return emojiMap[role] || '💼';
   };
 
-  const getPaymentIcon = (method: string) => {
-    switch(method) {
-      case 'VENMO': return '💜';
-      case 'CASHAPP': return '💚';
-      case 'STRIPE': return '💳';
-      default: return '💳';
-    }
-  };
 
   const getTipRecommendations = (vendor: Vendor) => {
     if (vendor.customTipAmount) {
@@ -180,15 +173,8 @@ export default function CoupleTippingPage({ params }: { params: Promise<{ slug: 
     return tips[Math.floor(Math.random() * tips.length)];
   };
 
-  const handleTipVendor = (vendor: Vendor) => {
-    setSelectedVendor(vendor);
-    setShowTipModal(true);
-  };
 
   const handlePaymentRedirect = async (paymentMethod: string, vendor: Vendor, amount: number) => {
-    const encodedAmount = encodeURIComponent(amount.toString());
-    const encodedNote = encodeURIComponent(`Wedding tip for ${vendor.name}`);
-    
     switch(paymentMethod) {
       case 'STRIPE':
         if (vendor.stripeAccountId) {

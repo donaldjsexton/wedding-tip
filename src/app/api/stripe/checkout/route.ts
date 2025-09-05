@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-08-27.basil',
+  });
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +20,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const stripe = getStripe();
 
     // Create Checkout Session with Stripe Connect
     const session = await stripe.checkout.sessions.create({
@@ -58,3 +68,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

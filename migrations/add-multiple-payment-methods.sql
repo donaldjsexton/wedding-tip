@@ -22,3 +22,4 @@ UPDATE vendors SET "acceptsStripe" = true WHERE "acceptsStripe" IS NULL;
 UPDATE vendors SET "acceptsVenmo" = false WHERE "acceptsVenmo" IS NULL;
 UPDATE vendors SET "acceptsCashApp" = false WHERE "acceptsCashApp" IS NULL;
 UPDATE vendors SET "acceptsZelle" = false WHERE "acceptsZelle" IS NULL;
+
